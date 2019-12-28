@@ -1,0 +1,79 @@
+{% extends "theme2.html" %}
+
+{% block title %}
+DVK Polymers
+{% endblock %}
+
+
+{% block body %}
+
+ <div class="main-panel">
+          <div class="content-wrapper">
+
+	      	  <div class="col-12 grid-margin stretch-card">
+	            <div class="card">
+	              <div class="card-body">
+	                <h4 class="card-title">Received Goods</h4>
+	                <p class="card-description"> Give appropriate values</p>
+	                
+	                <form class="form-sample" action="/receive" method="post">
+	                	<div class="row">
+	                        <div class="col-md-6">
+	                          <div class="form-group row">
+	                            <label class="col-sm-4 col-form-label">Select Item Name</label>
+	                            <div class="col-sm-8">
+	                              {{ vars.get('items')|safe }}	
+	                            </div>
+	                          </div>
+	                        </div>
+	                        <div class="col-md-6">
+	                          <div class="form-group row">
+	                            <label class="col-sm-4 col-form-label">Select Purchase Name</label>
+	                            <div class="col-sm-8">
+	                              {{ vars.get('creditors')|safe }}	
+	                            </div>
+	                          </div>
+	                        </div>
+	                     </div>
+	                     <div class="row">
+	                        <div class="col-md-6">
+	                          <div class="form-group row">
+	                            <label class="col-sm-4 col-form-label">Enter Quantity</label>
+	                            <div class="col-sm-8">
+	                              <input name='quantity' type="number" id="quantity" name="Quantity" placeholder="Quantity in kGs" title="Enter Quantity" required>
+	                            </div>
+	                          </div>
+	                        </div>
+	                        <div class="col-md-6">
+	                          <div class="form-group row">
+	                            <label class="col-sm-4 col-form-label">Select Date</label>
+	                            <div class="col-sm-8">
+							        <input type="date" name="receipt_date">
+	                            </div>
+	                          </div>
+	                        </div>
+	                     </div>
+	                  <button type="submit" class="btn btn-gradient-primary mb-2">Submit</button>
+	                </form>
+	              </div>
+	            </div>
+	          </div>
+
+          </div>
+          <!-- content-wrapper ends -->
+          <!-- partial:../../partials/_footer.html -->
+          <footer class="footer">
+            <div class="d-sm-flex justify-content-center justify-content-sm-between">
+              <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2017 <a href="https://www.bootstrapdash.com/" target="_blank">BootstrapDash</a>. All rights reserved.</span>
+              <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i class="mdi mdi-heart text-danger"></i></span>
+            </div>
+          </footer>
+          <!-- partial -->
+        </div>
+
+{% endblock %}
+
+{% block end_extJS %}
+
+
+{% endblock %}
