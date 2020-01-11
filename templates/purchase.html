@@ -5,45 +5,23 @@ DVK Polymers
 {% endblock %}
 
 {% block extJS %}
-<script type="text/javascript">
-	$('#search-select')
-  .dropdown();
-$('#search-select2')
-  .dropdown();
 
-  $('#search-select3')
-  .dropdown();
-    console.log( "ready!" );
-
-    $('.ui.dropdown').dropdown();
-</script>
 {% endblock %}
 
 {% block body %}
- <div class="main-panel" onloac="convertDropdown()">
+
+ <div class="main-panel">
           <div class="content-wrapper">
 
 	      	  <div class="col-12 grid-margin stretch-card">
 	            <div class="card">
 	              <div class="card-body">
-	                <h4 class="card-title">Received Goods</h4>
+	                <h4 class="card-title">Purchase Goods</h4>
 	                <p class="card-description"> Give appropriate values</p>
-<div>
-	<select class="ui search selection dropdown" id="search-select2">
-	  <option value="">State</option>
-	  <option value="AL">Alabama</option>
-	  <option value="AK">Alaska</option>
-	  <option value="BK">Blaska</option>
-	</select>
-</div>
-
-	
-
-	                <form class="form-sample" action="/receive" method="post">
+	                <form class="form-sample" action="/purchase" method="post">
 	                	<div class="row">
 	                        <div class="col-md-6">
 	                          <div class="form-group row">
-
 	                            <label class="col-sm-4 col-form-label">Select Item Name</label>
 	                            <div class="col-sm-8">
 	                              {{ vars.get('items')|safe }}	
@@ -77,24 +55,6 @@ $('#search-select2')
 	                          </div>
 	                        </div>
 	                     </div>
-	                   <div class="dropdown example">
-      <h4 class="ui header">Search Selection</h4>
-      <p>A selection dropdown can allow a user to search through a large list of choices.</p>
-      <div class="ui simple search selection dropdown" id="search-select3">
-        <input type="hidden" name="country">
-        <i class="dropdown icon"></i>
-        <div class="default text">Select Country</div>
-        <div class="menu">
-        <div class="item" data-value="af"><i class="af flag"></i>Afghanistan</div>
-        <div class="item" data-value="ax"><i class="ax flag"></i>Aland Islands</div>
-        <div class="item" data-value="al"><i class="al flag"></i>Albania</div>
-        <div class="item" data-value="dz"><i class="dz flag"></i>Algeria</div>
-        <div class="item" data-value="as"><i class="as flag"></i>American Samoa</div>
-        <div class="item" data-value="ad"><i class="ad flag"></i>Andorra</div>
-
-       </div>
-   </div>
-</div>
 	                  <button type="submit" class="btn btn-gradient-primary mb-2">Submit</button>
 	                </form>
 	              </div>
@@ -116,18 +76,6 @@ $('#search-select2')
 {% endblock %}
 
 {% block end_extJS %}
-<script type="text/javascript">
-	function convertDropdown(){
-		$('.ui.dropdown')
-  		.dropdown();
 
-  		$('#search-select3')
-  .dropdown();
-$('#search-select2')
-  .dropdown();
-	}
-
-
-</script>
 
 {% endblock %}

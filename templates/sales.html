@@ -1,0 +1,286 @@
+{% extends "theme2.html" %}
+
+{% block title %}
+DVK Polymers
+{% endblock %}
+
+{% block extCSS %}
+<style>
+.qty
+{
+	width: 80px !important;
+}
+.qtyBag
+{
+	width: 80px !important;
+}
+.rate
+{
+	width: 80px !important;
+}
+table.items{
+  table-layout: auto;
+  width: 180px !important; 
+}
+</style>
+{% endblock %}
+
+{% block extJS %}
+
+{% endblock %}
+
+{% block body %}
+
+ <div class="main-panel">
+          <div class="content-wrapper">
+	      	  <div class="col-14 grid-margin stretch-card">
+	            <div class="card">
+	              <div class="card-body">
+	                <h4 class="card-title">Sales Goods</h4>
+	                <p class="card-description"> Give appropriate values</p>
+	                <form class="form-sample" action="/sales" method="post">
+	                	<div class="form-group">
+                        	{{ vars.get('debtors')|safe }}
+                      	</div>
+	                	<table class="table table-hover items">
+	                      <thead>
+	                        <tr>
+	                          <th>SNo.</th>
+	                          <th>Items</th>
+	                          <th>Qty in Kgs</th>
+	                          <th>Qty in Bags</th>
+	                          <th>Rate</th>
+	                          <th>Amount</th>
+	                          <th></th>
+	                        </tr>
+	                      </thead>
+	                      <tbody id='itemsTable'>
+	                        <tr id='item1'>
+	                        	<td id='sno1'>1.</td>
+	                          <td id='itemId1'>{{ vars.get('items')|safe }}</td>
+	                          <td id='itemQty1'>
+	                          	<input name='quantity1' type="number" id="quantity1" placeholder="Quantity in kGs" class='qty' title="Kgs" step="0.01" required>
+	                          </td>
+	                          <td id='itemQtyBag1'>
+	                          	<input type="number" id="quantityBag1" placeholder="Quantity in Bags" class='qtyBag' title="Bags" step="0.01">
+	                          </td>
+	                          <td id='itemRate1'>
+	                          	<input name='Rate1' type="number" id="Rate1" placeholder="Rate per kG" class='rate' title="Enter Rate" step="0.01" required>
+	                          </td>
+	                          <td id='itemAmt1'>
+	                          	<input name='Amount1' type="number" id="Amount" placeholder="Amount" title="Amount" step="0.01" class="Amount" readonly>
+	                          </td>
+	                          <td id='addItem'>
+	                          	<button id='addButton' class="btn btn-block btn-lg btn-gradient-primary mt-4" onclick="addItem('2');">+ Add an Item</button>
+	                          </td>
+	                        </tr>
+	                    	</tbody>
+                		</table>
+	                	 <input name='totalAmount' type="number" id="totalAmount" placeholder="Total Amount" title="Total Amount" step="0.01" readonly>
+	                  <button type="submit" class="btn btn-gradient-primary mb-2">Submit</button>
+	                </form>
+	              </div>
+	            </div>
+	          </div>
+
+          </div>
+          <!-- content-wrapper ends -->
+          <!-- partial:../../partials/_footer.html -->
+          <footer class="footer">
+            <div class="d-sm-flex justify-content-center justify-content-sm-between">
+              <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2017 <a href="https://www.bootstrapdash.com/" target="_blank">BootstrapDash</a>. All rights reserved.</span>
+              <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i class="mdi mdi-heart text-danger"></i></span>
+            </div>
+          </footer>
+          <!-- partial -->
+        </div>
+
+{% endblock %}
+
+{% block end_extJS %}
+<script type="text/javascript">
+
+	$(document).on('change', '.rate', function(){
+        var total = 0;
+        var num = this.getAttribute('id').slice(-1);
+        
+        var rate = this.value;
+        var qty = document.getElementById('quantity'+num).value;
+        var amt = parseFloat(rate) * parseFloat(qty);
+        console.log('rate function');
+        document.getElementsByName('Amount'+num)[0].value = String(amt);
+        calculateSum();
+    });
+
+	$(document).on('change', '.qty', function(){
+        var total = 0;
+        var num = this.getAttribute('id').slice(-1);
+        
+        var qty = this.value;
+        updateBag(qty,num);
+
+		if(document.getElementById('Rate'+num).value!=null)
+		{
+			var rate = document.getElementById('Rate'+num).value;
+			var amt = parseFloat(rate) * parseFloat(qty);
+        	document.getElementsByName('Amount'+num)[0].value = String(amt);
+		}
+		console.log('qty function');
+        calculateSum();
+        
+
+    });
+
+    $(document).on('change','.qtyBag', function() {
+    	var num = this.getAttribute('id').slice(-1);
+    	var qtyBag = this.value;
+
+    	var qty = updateKg(qtyBag,num);
+
+    	if(document.getElementById('Rate'+num).value!=null)
+		{
+			var rate = document.getElementById('Rate'+num).value;
+			var amt = parseFloat(rate) * parseFloat(qty);
+        	document.getElementsByName('Amount'+num)[0].value = String(amt);
+		}
+		console.log('qty Bag function');
+        calculateSum();
+    });
+
+	$(document).on('change', '#Amount', function(){
+        var total = 0;
+        $('#Amount').each(function(){
+            if($(this).val() != '')
+            {
+            	console.log($(this).val());
+                total += parseFloat($(this).val());
+            }
+            console.log(total);
+        });
+        document.getElementById("totalAmount").value = String(total);
+        // $('#totalAmount').html(total);
+    });
+
+	function updateBag(qtyKG,itemNum){
+		var bags = parseFloat(qtyKG) / 25;
+		document.getElementById("quantityBag"+itemNum).value = bags;
+	}
+
+	function updateKg(qtyKG,itemNum){
+		var kgs = parseFloat(qtyKG) * 25;
+		document.getElementById("quantity"+itemNum).value = kgs;	
+
+		return kgs;
+	}
+
+    function calculateSum() {
+
+		var sum = 0;
+		//iterate through each textboxes and add the values
+		// console.log(document.getElementsById("Amount"));
+		$(".Amount").each(function() {
+
+			//add only if the value is number
+			if(!isNaN(this.value) && this.value.length!=0) {
+				console.log('abcd')
+				sum += parseFloat(this.value);
+			}
+			 console.log(sum);
+		});
+		//.toFixed() method will roundoff the final sum to 2 decimal places
+		document.getElementById("totalAmount").value = String(sum);
+	}
+
+</script>
+<script type="text/javascript">
+	function addItem(nextItem){
+		var addButton=document.getElementById('addButton')
+		document.getElementById("addItem").removeChild(addButton);
+		document.getElementById("addItem").setAttribute("id"," ");
+
+		var myTable = document.getElementById("itemsTable");
+		 var currentIndex = myTable.rows.length;
+        var currentRow = myTable.insertRow(-1);
+
+
+
+		 var qtyBox = document.createElement("input");
+		 qtyBox.setAttribute("name", "quantity" + nextItem);
+		 qtyBox.setAttribute("type", "number");
+		 qtyBox.setAttribute("class", "qty");
+		 qtyBox.setAttribute("step", "0.01");
+		 qtyBox.setAttribute("id",  "quantity" + nextItem);
+		 qtyBox.setAttribute("placeholder", "Quantity in kGs");
+		 qtyBox.setAttribute("title", "Kgs");
+		 qtyBox.setAttribute("required", "");
+
+		 var qtyBagBox = document.createElement("input");
+		 qtyBagBox.setAttribute("type", "number");
+		 qtyBagBox.setAttribute("class", "qtyBag");
+		 qtyBagBox.setAttribute("step", "0.01");
+		 qtyBagBox.setAttribute("id",  "quantityBag" + nextItem);
+		 qtyBagBox.setAttribute("placeholder", "Quantity in Bags");
+		 qtyBagBox.setAttribute("title", "Bags");
+
+		 var rateBox = document.createElement("input");
+		 rateBox.setAttribute("name", "Rate" + nextItem);
+		 rateBox.setAttribute("type", "number");
+		 qtyBox.setAttribute("step", "0.01");
+		 rateBox.setAttribute("class", "rate");
+		 rateBox.setAttribute("id",  "Rate" + nextItem);
+		 rateBox.setAttribute("placeholder", "Rate per kG");
+		 rateBox.setAttribute("title", "Enter Rate");
+		 rateBox.setAttribute("required", "");
+
+		 var amtBox = document.createElement("input");
+		 amtBox.setAttribute("name", "Amount" + nextItem);
+		 amtBox.setAttribute("type", "number");
+		 amtBox.setAttribute("step", "0.01");
+		 amtBox.setAttribute("id",  "Amount" + nextItem);
+		 amtBox.setAttribute("class", "Amount");
+		 amtBox.setAttribute("placeholder", "Amount");
+		 amtBox.setAttribute("title", "Amount");
+		 amtBox.setAttribute("readonly", "");
+
+		 var nextVal = parseInt(nextItem, 10)
+		 nextVal+=1
+        var addRowBox = document.createElement("button");
+        addRowBox.setAttribute("onclick", "addItem("+String(nextVal)+");");
+        addRowBox.setAttribute("id", "addButton");
+        addRowBox.setAttribute("class", "btn btn-block btn-lg btn-gradient-primary mt-4");
+
+        addRowBox.innerHTML = "+ Add an Item";
+
+        var currentCell = currentRow.insertCell(-1);
+        currentRow.setAttribute("id", "item"+nextItem);
+
+        currentCell.setAttribute("id", "sno" + nextItem);
+        currentCell.innerHTML = nextItem + ".";
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemId" + nextItem);
+        currentCell.innerHTML = "{{ vars.get('items')|safe }}"
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemQty" + nextItem);
+        currentCell.appendChild(qtyBox);
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemQtyBag" + nextItem);
+        currentCell.appendChild(qtyBagBox);
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemRate" + nextItem);
+        currentCell.appendChild(rateBox);
+
+		currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemAmt" + nextItem);
+        currentCell.appendChild(amtBox);
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id","addItem");
+        currentCell.appendChild(addRowBox);
+	}
+</script>
+
+{% endblock %}

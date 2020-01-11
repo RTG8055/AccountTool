@@ -93,25 +93,29 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span> 
       </button>
-      <a class="navbar-brand" href="#">Welcome {{namex}}</a>
+      <a class="navbar-brand" href="#">Welcome {{vars.namex}}</a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
         <li><a href="/home">Home</a></li>
-        <li><a href="/stock">Stock</a></li>
+        <li><a href="/inventory">View Inventory</a></li>
         <li><a href="/graph">graph</a></li>
         <li><a href="/receive">Receipt Enter</a></li>
         <li><a href="/dispatch">Dispatch Enter</a></li>
         
       </ul>
 
+
+      {%if vars.namex%}
        <ul class="nav navbar-nav navbar-right">
         <li><a href="/logout"><span class="glyphicon glyphicon-user"></span>Logout</a></li>
       </ul>
-      <!-- <ul class="nav navbar-nav navbar-right">
+      {% else %}
+      <ul class="nav navbar-nav navbar-right">
         <li><a href="/signup"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
         <li class="active"><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-      </ul> -->
+      </ul>
+      {%endif%}
     </div>
   </div>
 </nav>

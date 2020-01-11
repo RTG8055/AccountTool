@@ -21,6 +21,20 @@
     <link rel="stylesheet" type="text/css" href="../static/css/style.css">
     <!-- End layout styles -->
     <link rel="shortcut icon" href="../static/image/favicon.png" />
+
+{% block extCSS %}
+
+{% endblock %}
+    <link rel="stylesheet" type="text/css" href="../static/css/semantic.min.css">
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+<script src="../static/js/semantic.min.js"></script>
+{% block extJS %}
+
+{% endblock %}
+
   </head>
   <body>
 
@@ -85,7 +99,7 @@
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item nav-profile">
-              <a href="#" class="nav-link">
+              <a href="/home" class="nav-link">
                 <div class="nav-profile-image">
                   <img src="../static/image/faces/face1.jpg" alt="profile">
                   <span class="login-status online"></span>
@@ -144,6 +158,18 @@
                   <li class="nav-item"> <a class="nav-link" href="pages/samples/error-500.html"> Inventory</a></li>
                 </ul>
               </div>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/sales">
+                <span class="menu-title">Sales</span>
+                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/purchase">
+                <span class="menu-title">Purchase</span>
+                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+              </a>
             </li>
           </ul>
         </nav>

@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 app.secret_key = '8bf9547569cd5a638931a8639cf9f86237931e92' 
 
-databaseName = 'example2.db'
+databaseName = 'example4.db'
 itemsTable = 'items'
 debtorsTable = 'debtors'
 creditorsTable = 'creditors'
@@ -51,8 +51,16 @@ def enterDispatch():
         _debtor_id = request.form.get('debtor')
         _quantity = request.form.get('quantity')
         _dispatch_date = request.form.get('dispatch_date')
-        print _dispatch_date
-        insertData('dispatch','item_id, qty,dispatch_date, debtor_id',"{}, {}, '{}', {}".format(_item_id, _quantity, str(_dispatch_date), _debtor_id))
+
+        dispatch_id = getNewID('dispatch_id')
+        if(request.form.get('vehicle_no')):
+            _vehicle_no=request.form.get('vehicle_no')
+            columns='dispatch_id, item_id, qty,dispatch_date, debtor_id, vehicle_no'
+            values = "'{}', '{}', '{}', '{}', '{}'".format(dispatch_id, _item_id, _quantity, str(_dispatch_date), _debtor_id, _vehicle_no)
+        else:
+            columns='dispatch_id, item_id, qty,dispatch_date, debtor_id'
+            values = "'{}', '{}', '{}', '{}', '{}'".format(dispatch_id, _item_id, _quantity, str(_dispatch_date), _debtor_id)
+        insertData('dispatch',columns, values)
     except Exception as e:
             return json.dumps({'errory':str(e)})
     else:
@@ -62,6 +70,37 @@ def enterDispatch():
 # def entry():
 #     if(session.get('user_id') and session.get('access_group') == 'all_access'):
 
+@app.route('/sales')
+def sales():
+    if(session.get('user_id') and session.get('access_group') == 'all_access'):
+        try:
+            itemData = getData(itemsTable, 'name, item_id')
+            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0)
+
+            debtorsData = getData(debtorsTable,'name, debtor_id')
+            debtorsDropDown = createDropDown(debtorsData, 'debtor','Select Party Name', 1, 0)
+            
+            return showWebPage('sales.html', {'items':itemDropDown, 'debtors':debtorsDropDown})
+        except Exception as e:
+            return json.dumps({'errory':str(e)})
+    else:
+        return showWebPage('404.html',{'error' :"no access"})
+
+@app.route('/purchase')
+def purchase():
+    if(session.get('user_id') and session.get('access_group') == 'all_access'):
+        try:
+            itemData = getData(itemsTable, 'name, item_id')
+            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0)
+
+            creditorsData = getData(creditorsTable,'name, creditor_id')
+            creditorsDropDown = createDropDown(creditorsData, 'creditor','Select Party Name', 1, 0)
+            
+            return showWebPage('purchase.html', {'items':itemDropDown, 'creditors':creditorsDropDown})
+        except Exception as e:
+            return json.dumps({'errory':str(e)})
+    else:
+        return showWebPage('404.html',{'error' :"no access"})
 
 @app.route('/receive')
 def receive():
@@ -87,8 +126,17 @@ def enterReceive():
         _creditor_id = request.form.get('creditor')
         _quantity = request.form.get('quantity')
         _receipt_date = request.form.get('receipt_date')
-        print _receipt_date
-        insertData('received','item_id, qty,receipt_date, creditor_id',"{}, {}, '{}', {}".format(_item_id, _quantity, str(_receipt_date), _creditor_id))
+        
+        receipt_id = getNewID('receipt_id')
+        if(request.form.get('vehicle_no')):
+            _vehicle_no=request.form.get('vehicle_no')
+            columns='receipt_id, item_id, qty,receipt_date, creditor_id, vehicle_no'
+            values = "'{}', '{}', '{}', '{}', '{}'".format(receipt_id, _item_id, _quantity, str(_receipt_date), _creditor_id, _vehicle_no)
+        else:
+            columns='receipt_id, item_id, qty,receipt_date, creditor_id'
+            values = "'{}', '{}', '{}', '{}', '{}'".format(receipt_id, _item_id, _quantity, str(_receipt_date), _creditor_id)
+        insertData('received',columns, values)
+
     except Exception as e:
             return json.dumps({'errory':str(e)})
     else:
@@ -163,7 +211,7 @@ def getData(table, columns='*'):
     return data
 
 def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex):
-    dropDown = "<select name='"+dropDownName+"' class='form-control'> "
+    dropDown = "<select name='"+dropDownName+"' class='ui search dropdown' id='search-select' required> "
     dropDown += "<option selected='selected' disabled='disabled'>"+defaultOption+"</option>"
     for row in data:
         dropDown += "<option value='" + str(row[valueIndex]) + "'> " + str(row[nameIndex]) + "</option>"
@@ -175,8 +223,8 @@ def insertData(table, columns, values):
     # conn = mysql.connect()
     cursor = conn.cursor()
     print("insert into {}({}) values ({})".format(table, columns, values))
-    data = cursor.execute("insert into {} ({}) values ({})".format(table, columns, values))
-    print data.fetchall()
+    data = cursor.execute("insert into {}({}) values ({})".format(table, columns, values))
+    print cursor.fetchall()
     conn.commit()
     return data
 
@@ -184,6 +232,23 @@ def updateInventory(table, item_id):
     conn = sqlite3.connect(databaseName)
     cursor = conn.cursor()
     data = cursor.execute("select * from "+table)
+
+def getNewID(id_name):
+    conn = sqlite3.connect(databaseName)
+    cursor = conn.cursor()
+
+    data = cursor.execute("select last_val from current_id where id_name='{}'".format(id_name))
+    data = cursor.fetchone()[0]
+    print data
+    if(id_name!='user_id'):
+        new_id = data[:2] + "{:04d}".format(int(data[2:])+1)
+    else:
+        new_id = data[:1] + "{:04d}".format(int(data[1:])+1)
+    print new_id
+
+    cursor.execute("UPDATE current_id set last_val='{}' where id_name='{}'".format(new_id, id_name))
+    conn.commit()
+    return new_id
 
 
 
