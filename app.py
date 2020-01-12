@@ -73,18 +73,52 @@ def enterDispatch():
 @app.route('/sales')
 def sales():
     if(session.get('user_id') and session.get('access_group') == 'all_access'):
-        try:
-            itemData = getData(itemsTable, 'name, item_id')
-            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0)
+        # try:
+        itemData = getData(itemsTable, 'name, item_id')
+        itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0)
 
-            debtorsData = getData(debtorsTable,'name, debtor_id')
-            debtorsDropDown = createDropDown(debtorsData, 'debtor','Select Party Name', 1, 0)
-            
-            return showWebPage('sales.html', {'items':itemDropDown, 'debtors':debtorsDropDown})
-        except Exception as e:
-            return json.dumps({'errory':str(e)})
+        debtorsData = getData(debtorsTable,'name, debtor_id')
+        debtorsDropDown = createDropDown(debtorsData, "debtor' id='debtorDropDown",'Select Party Name', 1, 0)
+        
+        return showWebPage('sales.html', {'items':itemDropDown, 'debtors':debtorsDropDown})
+        # except Exception as e:
+            # return json.dumps({'errory':str(e)})
     else:
         return showWebPage('404.html',{'error' :"no access"})
+
+@app.route('/sales', methods=['POST'])
+def enterSales():
+    if(session.get('user_id')):
+        if(session.get('access_group') == 'all_access'):
+            # try:
+            _debtor_id = request.form.get('debtor')
+            _item_all = getAllElements('item')
+            _quantity_all = getAllElements('quantity')
+            _rate_all = getAllElements('rate')
+            _amount_all = getAllElements('amount')
+            _bill_date = request.form.get('billDate')
+
+            totalAmount = request.form.get('totalAmount')
+            narration = ''
+            if(request.form.get('naration')):
+                narration = request.form.get('naration')
+
+            bill_no = getNewID('bill_no')
+            columns='bill_no, party_id, narration, total_amt, type, bill_date'
+            values = "'{}', '{}', '{}', '{}', '{}', '{}'".format(bill_no, _debtor_id, narration, totalAmount, "sales", _bill_date)
+
+            insertData('invoice',columns, values)
+            insertInvoiceDetails(bill_no,_item_all,_quantity_all,_rate_all,_amount_all)
+            updateBalance("debtor",_debtor_id,totalAmount,"add")
+            return redirect('/sales')
+
+            # except Exception as e:
+                # return json.dumps({'errory':str(e)})
+        else:
+            return showWebPage('404.html',{'error' :"no access"})   
+    else:
+        redirect('/')
+
 
 @app.route('/purchase')
 def purchase():
@@ -136,6 +170,7 @@ def enterReceive():
             columns='receipt_id, item_id, qty,receipt_date, creditor_id'
             values = "'{}', '{}', '{}', '{}', '{}'".format(receipt_id, _item_id, _quantity, str(_receipt_date), _creditor_id)
         insertData('received',columns, values)
+        return redirect('/receive')
 
     except Exception as e:
             return json.dumps({'errory':str(e)})
@@ -196,22 +231,61 @@ def validateLogin():
         cursor.close()
         conn.close()
 
+def getAllElements(prefixString):
+    listValues = []
+    i=1
+    print(prefixString+str(i))
+    while True:
+        if(request.form.get(prefixString+str(i))):
+            listValues.append(str(request.form.get(prefixString+str(i))))
+            i+=1
+        else:
+            break
+    return listValues
+
+def updateBalance(party_type,id,amount,bill_type):
+    table=''
+    condition=''
+    if(party_type == 'debtor'):
+        currBal = getData(debtorsTable, 'balance', "debtor_id = '{}'".format(id))[0][0]
+        table=debtorsTable
+        condition = "where debtor_id='{}'".format(id)
+    else:
+        currBal = getData(creditorsTable, 'balance', "creditor_id = '{}'".format(id))[0][0]
+        table=creditorsTable
+        condition = "where creditor_id='{}'".format(id)
+    print repr(currBal)
+    newBal=currBal
+    if(bill_type == 'add'):
+        newBal=currBal + float(amount)
+    else:
+        newBal=currBal - float(amount)
+
+    updateData(table,['balance'],[newBal],condition)
+
+
+
 
 def showWebPage(page, vars):
     vars['namex'] = session.get('name')
     return render_template(page,vars=vars)
 
 
-def getData(table, columns='*'):
+def getData(table, columns='*',condition='blank'):
     conn = sqlite3.connect(databaseName)
     # conn = mysql.connect()
+    if(condition != 'blank'):
+        finalCondition = "where {}".format(condition)
+    else:
+        finalCondition = ''
     cursor = conn.cursor()
-    data = cursor.execute("select "+columns+ " from "+table)
+    print repr("select {} from {} {}".format(columns, table, finalCondition))
+    data = cursor.execute("select {} from {} {}".format(columns, table, finalCondition))
     data = cursor.fetchall()
     return data
 
 def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex):
-    dropDown = "<select name='"+dropDownName+"' class='ui search dropdown' id='search-select' required> "
+    dropDown = "<select name='"+dropDownName+"' class='ui search dropdown' required> "
     dropDown += "<option selected='selected' disabled='disabled'>"+defaultOption+"</option>"
     for row in data:
         dropDown += "<option value='" + str(row[valueIndex]) + "'> " + str(row[nameIndex]) + "</option>"
@@ -222,16 +296,28 @@ def insertData(table, columns, values):
     conn = sqlite3.connect(databaseName)
     # conn = mysql.connect()
     cursor = conn.cursor()
-    print("insert into {}({}) values ({})".format(table, columns, values))
+    print("insert into {} ({}) values ({})".format(table, columns, values))
     data = cursor.execute("insert into {}({}) values ({})".format(table, columns, values))
     print cursor.fetchall()
     conn.commit()
     return data
 
-def updateInventory(table, item_id):
+def updateData(table,columns, values,condition):
     conn = sqlite3.connect(databaseName)
     cursor = conn.cursor()
-    data = cursor.execute("select * from "+table)
+    updateString=''
+    for (c,v) in zip(columns, values):
+        updateString += "{}='{}' ".format(c,v)
+    updateString+= condition
+    cursor.execute("UPDATE {} set {}".format(table,updateString))
+    conn.commit()
+
+def insertInvoiceDetails(bill_no,_item_all,_quantity_all,_rate_all,_amount_all):
+    for (item,qty,rate,amt) in zip(_item_all,_quantity_all,_rate_all,_amount_all):
+        columns = 'bill_no, item_id, qty, rate, amount'
+        values = "'{}', '{}', '{}', '{}', '{}'".format(bill_no, item, qty, rate, amt)
+        insertData('invoice_details', columns, values)
+
 
 def getNewID(id_name):
     conn = sqlite3.connect(databaseName)

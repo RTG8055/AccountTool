@@ -66,6 +66,7 @@ c.execute("INSERT INTO current_id VALUES ('debtor_id','DB0001')")
 c.execute("INSERT INTO current_id VALUES ('receipt_id','PU0001')")
 c.execute("INSERT INTO current_id VALUES ('dispatch_id','SA0001')")
 c.execute("INSERT INTO current_id VALUES ('user_id','U0001')")
+c.execute("INSERT INTO current_id VALUES ('bill_no', 'B0001')")
 
 
  # Insert a row of data
