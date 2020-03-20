@@ -4,6 +4,12 @@
 DVK Polymers
 {% endblock %}
 
+
+{% block extCSS %}
+    <link rel="stylesheet" type="text/css" href="../static/css/invoice.css" >
+{% endblock %}
+
+
 {% block extJS %}
 
 {% endblock %}
@@ -18,43 +24,59 @@ DVK Polymers
 	              <div class="card-body">
 	                <h4 class="card-title">Purchase Goods</h4>
 	                <p class="card-description"> Give appropriate values</p>
-	                <form class="form-sample" action="/purchase" method="post">
-	                	<div class="row">
-	                        <div class="col-md-6">
-	                          <div class="form-group row">
-	                            <label class="col-sm-4 col-form-label">Select Item Name</label>
-	                            <div class="col-sm-8">
-	                              {{ vars.get('items')|safe }}	
-	                            </div>
-	                          </div>
-	                        </div>
-	                        <div class="col-md-6">
-	                          <div class="form-group row">
-	                            <label class="col-sm-4 col-form-label">Select Purchase Name</label>
-	                            <div class="col-sm-8">
-	                              {{ vars.get('creditors')|safe }}	
-	                            </div>
-	                          </div>
-	                        </div>
-	                     </div>
-	                     <div class="row">
-	                        <div class="col-md-6">
-	                          <div class="form-group row">
-	                            <label class="col-sm-4 col-form-label">Enter Quantity</label>
-	                            <div class="col-sm-8">
-	                              <input name='quantity' type="number" id="quantity" name="Quantity" placeholder="Quantity in kGs" title="Enter Quantity" required>
-	                            </div>
-	                          </div>
-	                        </div>
-	                        <div class="col-md-6">
-	                          <div class="form-group row">
-	                            <label class="col-sm-4 col-form-label">Select Date</label>
-	                            <div class="col-sm-8">
-							        <input type="date" name="receipt_date">
-	                            </div>
-	                          </div>
-	                        </div>
-	                     </div>
+
+	                <form class="form-sample" action="/purchase" method="post" id="purchaseForm">
+
+	                	<div class="form-group">
+								<label for="billDate">Bill Date</label>
+    	                    	<input type="date" class='form-control' name="billDate" id='date' placeholder="Bill Date" required>
+    	                   </div>
+
+	                	<div class="form-group">
+	                			<label for="creditorDropDown">Party Name</label>
+                      			{{ vars.get('creditors')|safe }}
+                      	</div>
+                      	
+
+	                	<table class="table table-hover items">
+	                      <thead>
+	                        <tr>
+	                          <th>SNo.</th>
+	                          <th>Items</th>
+	                          <th>Qty in Kgs</th>
+	                          <th>Qty in Bags</th>
+	                          <th>Rate</th>
+	                          <th>Amount</th>
+	                          <th></th>
+	                        </tr>
+	                      </thead>
+	                      <tbody id='itemsTable'>
+	                        <tr id='item1'>
+	                        	<td id='sno1'>1.</td>
+	                          <td id='itemId1'>
+	                          	{{ vars.get('items')|safe }}
+	                          	<p class="card-description" id="currQty1"></p>
+	                          </td>
+	                          <td id='itemQty1'>
+	                          	<input name='quantity1' type="number" id="quantity1" placeholder="Quantity in kGs" class='qty' title="Kgs" step="0.01" required>
+	                          </td>
+	                          <td id='itemQtyBag1'>
+	                          	<input type="number" id="quantityBag1" placeholder="Quantity in Bags" class='qtyBag' title="Bags" step="0.01">
+	                          </td>
+	                          <td id='itemRate1'>
+	                          	<input name='rate1' type="number" id="Rate1" placeholder="Rate per kG" class='rate' title="Enter Rate" step="0.01" required>
+	                          </td>
+	                          <td id='itemAmt1'>
+	                          	<input name='amount1' type="number" id="Amount" placeholder="Amount" title="Amount" step="0.01" class="Amount" readonly>
+	                          </td>
+	                          <td id='addItem'><i class="mdi mdi-backspace icon-md" style='float:left;' onclick="removeItem('1')"></i>
+	                          	<button id='addButton' class="btn btn-block btn-lg btn-gradient-primary mt-4" onclick="addItem('2');">+ Add an Item</button>
+	                          </td>
+	                        </tr>
+	                    	</tbody>
+                		</table>
+                		<textarea name="narration" form='purchaseForm' placeholder="Narration"></textarea>
+	                	 <input name='totalAmount' type="number" id="totalAmount" placeholder="Total Amount" title="Total Amount" step="0.01" readonly>
 	                  <button type="submit" class="btn btn-gradient-primary mb-2">Submit</button>
 	                </form>
 	              </div>
@@ -77,5 +99,125 @@ DVK Polymers
 
 {% block end_extJS %}
 
+<script src="../static/js/invoice.js"></script>
+<script type="text/javascript">
+
+	$(document).on('change', '.itemDropDown', function(){
+		var itemNum = this.name.split('m')[1];
+		var item = this.options[this.selectedIndex].value;
+	$.ajax({
+        url : '/get/qty?id=' + item,
+        success: function(data) {
+            $('#currQty'+itemNum).html(data['currQty']+" Kgs");
+        }
+    });
+});
+
+
+	function removeItem(currItem){
+		var myTable = document.getElementById("itemsTable");
+		//add function to put add item button if the to be deleted item is the last one
+		myTable.deleteRow(parseInt(currItem)-1);
+	}
+
+	function addItem(newItem){
+		var addButton=document.getElementById('addButton')
+		document.getElementById("addItem").removeChild(addButton);
+		document.getElementById("addItem").setAttribute("id"," ");
+
+		var myTable = document.getElementById("itemsTable");
+		 var currentIndex = myTable.rows.length;
+        var currentRow = myTable.insertRow(-1);
+        var nextVal = parseInt(newItem, 10)
+		nextVal+=1
+
+
+
+		 var qtyBox = document.createElement("input");
+		 qtyBox.setAttribute("name", "quantity" + newItem);
+		 qtyBox.setAttribute("type", "number");
+		 qtyBox.setAttribute("class", "qty");
+		 qtyBox.setAttribute("step", "0.01");
+		 qtyBox.setAttribute("id",  "quantity" + newItem);
+		 qtyBox.setAttribute("placeholder", "Quantity in kGs");
+		 qtyBox.setAttribute("title", "Kgs");
+		 qtyBox.setAttribute("required", "");
+
+		 var qtyBagBox = document.createElement("input");
+		 qtyBagBox.setAttribute("type", "number");
+		 qtyBagBox.setAttribute("class", "qtyBag");
+		 qtyBagBox.setAttribute("step", "0.01");
+		 qtyBagBox.setAttribute("id",  "quantityBag" + newItem);
+		 qtyBagBox.setAttribute("placeholder", "Quantity in Bags");
+		 qtyBagBox.setAttribute("title", "Bags");
+
+		 var rateBox = document.createElement("input");
+		 rateBox.setAttribute("name", "rate" + newItem);
+		 rateBox.setAttribute("type", "number");
+		 qtyBox.setAttribute("step", "0.01");
+		 rateBox.setAttribute("class", "rate");
+		 rateBox.setAttribute("id",  "Rate" + newItem);
+		 rateBox.setAttribute("placeholder", "Rate per kG");
+		 rateBox.setAttribute("title", "Enter Rate");
+		 rateBox.setAttribute("required", "");
+
+		 var amtBox = document.createElement("input");
+		 amtBox.setAttribute("name", "amount" + newItem);
+		 amtBox.setAttribute("type", "number");
+		 amtBox.setAttribute("step", "0.01");
+		 amtBox.setAttribute("id",  "Amount" + newItem);
+		 amtBox.setAttribute("class", "Amount");
+		 amtBox.setAttribute("placeholder", "Amount");
+		 amtBox.setAttribute("title", "Amount");
+		 amtBox.setAttribute("readonly", "");
+
+        var addRowBox = document.createElement("button");
+        addRowBox.setAttribute("onclick", "addItem("+String(nextVal)+");");
+        addRowBox.setAttribute("id", "addButton");
+        addRowBox.setAttribute("class", "btn btn-block btn-lg btn-gradient-primary mt-4");
+        addRowBox.innerHTML = "+ Add an Item";
+
+        var removeIcon = document.createElement("i");
+        removeIcon.setAttribute("class", "mdi mdi-backspace icon-md");
+        removeIcon.setAttribute("style", "float:left;");
+        removeIcon.setAttribute("onclick", "removeItem("+newItem+")");
+
+
+
+        var currentCell = currentRow.insertCell(-1);
+        currentRow.setAttribute("id", "item"+newItem);
+
+        currentCell.setAttribute("id", "sno" + newItem);
+        currentCell.innerHTML = newItem + ".";
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemId" + newItem);
+        currentCell.innerHTML = "{{ vars.get('items')|safe }} <p class='card-description' id='currQty"+newItem+"'></p>";
+
+        document.getElementById("itemId" + newItem).children[0].setAttribute("name", "item"+newItem);
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemQty" + newItem);
+        currentCell.appendChild(qtyBox);
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemQtyBag" + newItem);
+        currentCell.appendChild(qtyBagBox);
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemRate" + newItem);
+        currentCell.appendChild(rateBox);
+
+		currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id", "itemAmt" + newItem);
+        currentCell.appendChild(amtBox);
+
+        currentCell = currentRow.insertCell(-1);
+        currentCell.setAttribute("id","addItem");
+        currentCell.appendChild(removeIcon);
+        currentCell.appendChild(addRowBox);
+
+	}
+</script>
 
 {% endblock %}

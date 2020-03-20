@@ -5,24 +5,7 @@ DVK Polymers
 {% endblock %}
 
 {% block extCSS %}
-<style>
-.qty
-{
-	width: 80px !important;
-}
-.qtyBag
-{
-	width: 80px !important;
-}
-.rate
-{
-	width: 80px !important;
-}
-table.items{
-  table-layout: auto;
-  width: 180px !important; 
-}
-</style>
+    <link rel="stylesheet" type="text/css" href="../static/css/invoice.css" >
 {% endblock %}
 
 {% block extJS %}
@@ -39,18 +22,14 @@ table.items{
 	                <h4 class="card-title">Sales Goods</h4>
 	                <p class="card-description"> Give appropriate values</p>
 	                <form class="form-sample" action="/sales" method="post" id="salesForm">
+	                	<div class="form-group">
+								<label for="billDate">Bill Date</label>
+    	                    	<input type="date" class='form-control' name="billDate" id='date' placeholder="Bill Date" required>
+    	                   </div>
 
-
-	                	<div >
-	                		<span>
+	                	<div class="form-group">
 	                			<label for="debtorDropDown">Party Name</label>
                       			{{ vars.get('debtors')|safe }}
-                      		</span>
-							<span style="float:right;">
-								<label for="billDate">Bill Date</label>
-    	                    	<input type="date" name="billDate" id='date' placeholder="Bill Date" required>
-	                        </span>
-
                       	</div>
                       	
 
@@ -69,7 +48,9 @@ table.items{
 	                      <tbody id='itemsTable'>
 	                        <tr id='item1'>
 	                        	<td id='sno1'>1.</td>
-	                          <td id='itemId1'>{{ vars.get('items')|safe }}</td>
+	                          <td id='itemId1'>{{ vars.get('items')|safe }}
+	                          	<p class="card-description" id="currQty1"></p>
+	                          </td>
 	                          <td id='itemQty1'>
 	                          	<input name='quantity1' type="number" id="quantity1" placeholder="Quantity in kGs" class='qty' title="Kgs" step="0.01" required>
 	                          </td>
@@ -88,8 +69,14 @@ table.items{
 	                        </tr>
 	                    	</tbody>
                 		</table>
-                		<textarea name="naration" form='salesForm' placeholder="Narration"></textarea>
-	                	 <input name='totalAmount' type="number" id="totalAmount" placeholder="Total Amount" title="Total Amount" step="0.01" readonly>
+                		<div class="form-group">
+								<label for="narration">Narration</label>
+                				<textarea name="narration" form='salesForm' class='form-control' placeholder="Narration"></textarea>
+                		</div>
+                		<div class="form-group">
+								<label for="totalAmount">Total:</label>
+                		    	 <input name='totalAmount' type="number" id="totalAmount" placeholder="Total Amount" title="Total Amount" step="0.01" class ='form-control' readonly>
+                		</div>
 	                  <button type="submit" class="btn btn-gradient-primary mb-2">Submit</button>
 	                </form>
 	              </div>
@@ -111,101 +98,21 @@ table.items{
 {% endblock %}
 
 {% block end_extJS %}
+
+<script src="../static/js/invoice.js"></script>
 <script type="text/javascript">
-
-	$(document).on('change', '.rate', function(){
-        var total = 0;
-        var num = this.getAttribute('id').slice(-1);
-        
-        var rate = this.value;
-        var qty = document.getElementById('quantity'+num).value;
-        var amt = parseFloat(rate) * parseFloat(qty);
-        console.log('rate function');
-        document.getElementsByName('amount'+num)[0].value = String(amt);
-        calculateSum();
+	$(document).on('change', '.itemDropDown', function(){
+		var itemNum = this.name.split('m')[1];
+		var item = this.options[this.selectedIndex].value;
+	$.ajax({
+        url : '/get/qty?id=' + item,
+        success: function(data) {
+            $('#currQty'+itemNum).html(data['currQty']+" Kgs");
+        }
     });
+});
 
-	$(document).on('change', '.qty', function(){
-        var total = 0;
-        var num = this.getAttribute('id').slice(-1);
-        
-        var qty = this.value;
-        updateBag(qty,num);
 
-		if(document.getElementById('Rate'+num).value!=null)
-		{
-			var rate = document.getElementById('Rate'+num).value;
-			var amt = parseFloat(rate) * parseFloat(qty);
-        	document.getElementsByName('amount'+num)[0].value = String(amt);
-		}
-		console.log('qty function');
-        calculateSum();
-        
-
-    });
-
-    $(document).on('change','.qtyBag', function() {
-    	var num = this.getAttribute('id').slice(-1);
-    	var qtyBag = this.value;
-
-    	var qty = updateKg(qtyBag,num);
-
-    	if(document.getElementById('Rate'+num).value!=null)
-		{
-			var rate = document.getElementById('Rate'+num).value;
-			var amt = parseFloat(rate) * parseFloat(qty);
-        	document.getElementsByName('amount'+num)[0].value = String(amt);
-		}
-		console.log('qty Bag function');
-        calculateSum();
-    });
-
-	$(document).on('change', '#Amount', function(){
-        var total = 0;
-        $('#Amount').each(function(){
-            if($(this).val() != '')
-            {
-            	console.log($(this).val());
-                total += parseFloat($(this).val());
-            }
-            console.log(total);
-        });
-        document.getElementById("totalAmount").value = String(total);
-        // $('#totalAmount').html(total);
-    });
-
-	function updateBag(qtyKG,itemNum){
-		var bags = parseFloat(qtyKG) / 25;
-		document.getElementById("quantityBag"+itemNum).value = bags;
-	}
-
-	function updateKg(qtyKG,itemNum){
-		var kgs = parseFloat(qtyKG) * 25;
-		document.getElementById("quantity"+itemNum).value = kgs;	
-
-		return kgs;
-	}
-
-    function calculateSum() {
-
-		var sum = 0;
-		//iterate through each textboxes and add the values
-		// console.log(document.getElementsById("Amount"));
-		$(".Amount").each(function() {
-
-			//add only if the value is number
-			if(!isNaN(this.value) && this.value.length!=0) {
-				console.log('abcd')
-				sum += parseFloat(this.value);
-			}
-			 console.log(sum);
-		});
-		//.toFixed() method will roundoff the final sum to 2 decimal places
-		document.getElementById("totalAmount").value = String(sum);
-	}
-
-</script>
-<script type="text/javascript">
 	function removeItem(currItem){
 		var myTable = document.getElementById("itemsTable");
 		//add function to put add item button if the to be deleted item is the last one
@@ -284,8 +191,8 @@ table.items{
 
         currentCell = currentRow.insertCell(-1);
         currentCell.setAttribute("id", "itemId" + newItem);
-        currentCell.innerHTML = "{{ vars.get('items')|safe }}";
-        console.log(document.getElementById("itemId" + newItem).children);
+        currentCell.innerHTML = "{{ vars.get('items')|safe }} <p class='card-description' id='currQty"+newItem+"'></p>";
+        
         document.getElementById("itemId" + newItem).children[0].setAttribute("name", "item"+newItem);
 
         currentCell = currentRow.insertCell(-1);

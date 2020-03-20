@@ -1,6 +1,6 @@
 import sqlite3
 
-databaseName = 'example4.db'
+databaseName = 'example6.db'
 
 conn = sqlite3.connect(databaseName)
 
@@ -29,7 +29,7 @@ c.execute('''CREATE TABLE items
              (ITEM_ID text PRIMARY KEY, Name text, Code text, Description text, curr_qty real)''')
 
 c.execute('''CREATE TABLE daily_inventory
-             (ITEM_ID text, Qty real, date text, PRIMARY KEY ('ITEM_id'), FOREIGN KEY(item_id) REFERENCES items(item_id))''')
+             (ITEM_ID text, Qty real, date text, FOREIGN KEY(item_id) REFERENCES items(item_id))''')
 
 c.execute('''CREATE TABLE app_users
 			 (user_id text, Name text, email text, password text, access_group text, PRIMARY KEY ('user_id'))''')
@@ -50,7 +50,7 @@ c.execute('''CREATE TABLE INVOICE
 			 (bill_no text, party_id text, narration text, total_amt real, type text,bill_date text)''')
 
 c.execute('''CREATE TABLE INVOICE_DETAILS
-			  (bill_no text, item_id, qty real, rate real, amount real, foreign key(bill_no) REFERENCES invoice(bill_no))''')
+			  (bill_no text, item_id text, qty real, rate real, amount real, foreign key(bill_no) REFERENCES invoice(bill_no))''')
 
 c.execute('''CREATE TABLE receipts
 			 (receipt_no text, receipt_date text, party_id text, amount real)''')
@@ -87,13 +87,13 @@ print c.fetchall()
 
 items = ['MRPL OG', 'MRPL FILM', 'MRPL 12T', 'MRPL HR003', 'MRPL 35YR', 'MRPL 12CT', 'OPAL MH13', 'OPAL FILM', 'OPAL R03', 'MITAL M12RR', 'MITAL R03RR', 'MITAL FILM', 'MITAL TF', 'MITAL OG', 'EX METLOCIN', 'EXON 3155', 'TOTAL PP', 'RIL 050', 'RIL 110', 'RIL 350FG', 'RIL 100EY', 'RIL CP080', 'RIL 100NC', 'RIL 1070LA', 'RIL F190', 'HALDIA 5400', 'HALDIA 110', 'HALDIA T103', 'HALDIA FILM']
 
+item_id=''
 for i in items:
 	item_id = getNewID('item_id')
 	print repr("INSERT INTO items(item_id, name, curr_qty) VALUES ('{}', '{}',  0)".format(item_id, i))
 	print repr(i.split(' ')[0])
 	# c.execute('INSERT INTO items(item_id, name, code, description) VALUES ("'+ item_id + '", "' + i + '", ')
 	c.execute("INSERT INTO items(item_id, name, curr_qty) VALUES ('{}', '{}', 0)".format(item_id, i))
-
 
 c.execute("INSERT INTO debtors(debtor_id, name, address, balance) VALUES ('DB0001', 'rahul', 'hyd',0)")
 c.execute("INSERT INTO debtors(debtor_id, name, address, balance) VALUES ('DB0002', 'rishita', 'bom', 0)")
@@ -112,7 +112,7 @@ c.execute("INSERT INTO dispatch(dispatch_id, item_id, qty,dispatch_date, debtor_
 c.execute("INSERT INTO dispatch(dispatch_id, item_id, qty,dispatch_date, debtor_id) values ('SA0005', 'IT0002', 4124, '2019-12-21', 'DB0001')")
 
 
-c.execute("UPDATE current_id set last_val='IT0003' where id_name='item_id'")
+c.execute("UPDATE current_id set last_val='IT0030' where id_name='item_id'")
 c.execute("UPDATE current_id set last_val='CR0002' where id_name='creditor_id'")
 c.execute("UPDATE current_id set last_val='DB0002' where id_name='debtor_id'")
 c.execute("UPDATE current_id set last_val='PU0001' where id_name='receipt_id'")

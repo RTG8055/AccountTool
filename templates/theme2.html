@@ -25,12 +25,9 @@
 {% block extCSS %}
 
 {% endblock %}
-    <link rel="stylesheet" type="text/css" href="../static/css/semantic.min.css">
-<script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous"></script>
-<script src="../static/js/semantic.min.js"></script>
+<script src="../static/js/jquery-3.1.1.min.js"></script>
+    <!-- <link rel="stylesheet" type="text/css" href="../static/css/semantic.min.css"> -->
+<!-- <script src="../static/js/semantic.min.js"></script> -->
 {% block extJS %}
 
 {% endblock %}
@@ -43,7 +40,7 @@
 {%if vars.namex%}
 <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
   <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
-    <a class="navbar-brand brand-logo" href="index.html"><img src="../static/image/logo.svg" alt="logo" /></a>
+    <a class="navbar-brand brand-logo" href="/home"><img src="../static/image/logo.svg" alt="logo" /></a>
     <a class="navbar-brand brand-logo-mini" href="index.html"><img src="../static/image/logo-mini.svg" alt="logo" /></a>
   </div>
   <div class="navbar-menu-wrapper d-flex align-items-stretch">
@@ -117,34 +114,98 @@
                 <i class="mdi mdi-home menu-icon"></i>
               </a>
             </li>
-
             <li class="nav-item">
-              <a class="nav-link" data-toggle="collapse" href="/inventory" aria-expanded="false" aria-controls="ui-basic">
-                <span class="menu-title">View Inventory</span>
+              <a class="nav-link" data-toggle="collapse" href="#invoice" aria-expanded="false" aria-controls="invoice">
+                <span class="menu-title">Invoice Entry</span>
                 <i class="menu-arrow"></i>
                 <i class="mdi mdi-crosshairs-gps menu-icon"></i>
               </a>
-              <div class="collapse" id="ui-basic">
+              <div class="collapse" id="invoice">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="pages/ui-features/buttons.html">warehouse1</a></li>
-                  <li class="nav-item"> <a class="nav-link" href="pages/ui-features/typography.html">warehouse2</a></li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/sales">
+                      <span class="menu-title">Sales</span>
+                      <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/purchase">
+                      <span class="menu-title">Purchase</span>
+                      <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/receipt">
+                      <span class="menu-title">Receipt</span>
+                      <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/payment">
+                      <span class="menu-title">Payment</span>
+                      <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+                    </a>
+                  </li>
                 </ul>
               </div>
             </li>
+
             <li class="nav-item">
-              <a class="nav-link" href="/receive">
-                <span class="menu-title">Receipt</span>
-                <i class="mdi mdi-contacts menu-icon"></i>
+              <a class="nav-link" data-toggle="collapse" href="#inventory" aria-expanded="false" aria-controls="inventory">
+                <span class="menu-title">Inventory Links</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-crosshairs-gps menu-icon"></i>
               </a>
+              <div class="collapse" id="inventory">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="/receive">
+                      <span class="menu-title">Receive Goods</span>
+                      <i class="mdi mdi-contacts menu-icon"></i>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/dispatch">
+                      <span class="menu-title">Dispatch</span>
+                      <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </li>
+            
             <li class="nav-item">
-              <a class="nav-link" href="/dispatch">
-                <span class="menu-title">Dispatch</span>
-                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+              <a class="nav-link" data-toggle="collapse" href="#management" aria-expanded="false" aria-controls="management">
+                <span class="menu-title">Management</span>
+                <i class="menu-arrow"></i>
+                <i class="mdi mdi-crosshairs-gps menu-icon"></i>
               </a>
+              <div class="collapse" id="management">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="/addparty">
+                      <span class="menu-title">Add Party</span>
+                      <i class="mdi mdi-contacts menu-icon"></i>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/additem">
+                      <span class="menu-title">Add Item</span>
+                      <i class="mdi mdi-contacts menu-icon"></i>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/viewparty">
+                      <span class="menu-title">View Account</span>
+                      <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </li>
+
             <li class="nav-item">
-              <a class="nav-link" data-toggle="collapse" href="/graph" aria-expanded="false" aria-controls="general-pages">
+              <a class="nav-link" data-toggle="collapse" href="#general-pages" aria-expanded="false" aria-controls="general-pages">
                 <span class="menu-title">graph</span>
                 <i class="menu-arrow"></i>
                 <i class="mdi mdi-chart-bar menu-icon"></i>
@@ -158,18 +219,6 @@
                   <li class="nav-item"> <a class="nav-link" href="pages/samples/error-500.html"> Inventory</a></li>
                 </ul>
               </div>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/sales">
-                <span class="menu-title">Sales</span>
-                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/purchase">
-                <span class="menu-title">Purchase</span>
-                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              </a>
             </li>
           </ul>
         </nav>

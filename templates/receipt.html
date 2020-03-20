@@ -1,0 +1,68 @@
+{% extends "theme2.html" %}
+
+{% block title %}
+DVK Polymers
+{% endblock %}
+
+
+{% block body %}
+
+<div class="main-panel">
+	<div class="content-wrapper">
+		<div class="row">
+	    		<div class="col-md-6 grid-margin stretch-card">
+	        	<div class="card">
+	              <div class="card-body">
+	                <h4 class="card-title">Payment Received</h4>
+	                <p class="card-description"> Give appropriate values</p>
+	                <form class="form-sample" action="/receipt" method="post" id="receiptForm">
+                      	<div class="form-group">
+							            <label for="billDate">Bill Date</label>
+    	                    <input type="date" class="form-control" name="billDate" id='date' placeholder="Bill Date" required>
+	                    </div>
+	                	    <div class="form-group">
+                        	<label for="debtorDropDown">Party Name</label>
+                      		{{ vars.get('debtors')|safe }}
+                      	</div>
+                      	<p class="card-description" id="currBal"></p>
+	                	    <div class="form-group">
+							            <label for="amount">Amount</label>
+    	                    <input type="number" class="form-control" name="amount" placeholder="Amount" required>
+	                    </div>
+	                    <div class="form-group">
+							            <label for="narration">Narration</label>
+	                    	  <textarea name="narration" class="form-control" form='receiptForm' placeholder="Narration"></textarea>
+	                    </div>
+	                    <button type="submit" class="btn btn-gradient-primary mb-2">Submit</button>
+	                </form>
+	              </div>
+	            </div>
+	        </div>
+    </div>
+	  <!-- content-wrapper ends -->
+  	<!-- partial:../../partials/_footer.html -->
+  	<footer class="footer">
+	    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+  			<span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2017 <a href="https://www.bootstrapdash.com/" target="_blank">BootstrapDash</a>. All rights reserved.</span>
+      		<span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i class="mdi mdi-heart text-danger"></i></span>
+    	</div>
+  	</footer>
+ <!-- partial -->
+</div>
+
+{% endblock %}
+
+{% block end_extJS %}
+<script type="text/javascript">
+	$(document).on('change', '#debtorDropDown', function(){
+
+		$.ajax({
+            url : '/get/bal?id=' + this.value + '&type=debtor',
+            success: function(data) {
+                $('#currBal').html("Rs. "+data['currBal']);
+            }
+        });
+	});
+</script>
+
+{% endblock %}

@@ -1,0 +1,16 @@
+.qty
+{
+	width: 80px !important;
+}
+.qtyBag
+{
+	width: 80px !important;
+}
+.rate
+{
+	width: 80px !important;
+}
+table.items{
+  table-layout: auto;
+  width: 180px !important; 
+}

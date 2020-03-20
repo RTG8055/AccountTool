@@ -1,0 +1,188 @@
+{% extends "theme2.html" %}
+
+{% block title %}
+DVK Polymers
+{% endblock %}
+
+
+{% block extCSS %}
+{% endblock %}
+
+{% block extJS %}
+
+{% endblock %}
+
+{% block body %}
+
+ <div class="main-panel">
+          <div class="content-wrapper">
+	      	  <div class="col-14 grid-margin stretch-card">
+	            <div class="card">
+	              <div class="card-body">
+	                <h4 class="card-title">Party Accounts</h4>
+	                <p class="card-description"> Give appropriate values</p>
+	                <form class="form-sample" action="/viewparty" method="post" id="displayForm">
+                      	
+                      	<div class="form-group">
+                        	<label for="typeDropDown">Party Type</label>
+                      		<select name="typeDropDown" class="form-control" id="typeDropDown">
+                      			<option selected='selected' disabled='disabled'> Select Party Type</option>
+                      			<option value="creditor">Creditors</option>
+                      			<option value="debtor">Debtors</option>
+                      		</select>
+                      	</div>
+	                	
+	                	<div class="form-group" >
+							<label for="partyDropDown">Party Name</label>
+                      		<div id="partyDropDown">
+                      			
+                      		</div>
+                      	</div>
+	                	<table class="table table-hover items">
+	                      <thead>
+	                        <tr class='billHead'>
+	                        	<th></th>
+	                          <th>Bill No.</th>
+	                          <th>Bill Date</th>
+	                          <th>Debited Amount</th>
+	                          <th>Credited Amount</th>
+	                          <th></th>
+	                        </tr>
+	                      </thead>
+	                      <tbody id='billsTable'>
+	                        
+	                      </tbody>
+                		</table>
+	                </form>
+	              </div>
+	            </div>
+	          </div>
+
+          </div>
+          <!-- content-wrapper ends -->
+          <!-- partial:../../partials/_footer.html -->
+          <footer class="footer">
+            <div class="d-sm-flex justify-content-center justify-content-sm-between">
+              <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2017 <a href="https://www.bootstrapdash.com/" target="_blank">BootstrapDash</a>. All rights reserved.</span>
+              <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i class="mdi mdi-heart text-danger"></i></span>
+            </div>
+          </footer>
+          <!-- partial -->
+        </div>
+{% endblock %}
+
+{% block end_extJS %}
+<script type="text/javascript">
+	function editBill(bill_no){
+		console.log("edit function");
+	}
+
+	function getBilldata(bill_no){
+		$.ajax({
+            url : '/get/bill/details?id=' +bill_no ,
+            success: function(data) {
+            	var i;
+            	for(i=0;i<data['itemDetails'].length;i++){
+            		var element = $('#'+bill_no+'-details');
+                	if(i!=0){
+                		var myTable = document.getElementById("billsTable");
+                		var newElement = document.createElement("tr");
+                		
+        				newElement.innerHTML=data['itemDetails'][i];
+                		
+                		newElement.after(element);
+						// element.parentNode.insertBefore(newElement, element.nextSibling);
+        				// var currentRow = myTable.insertRow(currentIndex);
+
+                	}
+                	else{
+                		element.html(data['itemDetails'][i]);
+                	}
+            	}
+            	console.log(data);
+                $('.'+bill_no+'-toggle').attr('style','');
+            }
+        });
+	}
+
+</script>
+<script type="text/javascript">
+
+	$("a[id^=bill]").click(function(event) {
+    $("#bill" + $(this).attr('id').substr(5)).slideToggle("slow");
+    event.preventDefault();
+	});
+
+
+	$(document).on('change', '#typeDropDown', function(){
+
+		$.ajax({
+            url : '/get/parties?type=' + this.value,
+            success: function(data) {
+                $('#partyDropDown').html(data['dropDown']);
+            }
+        });
+	});
+	$(document).on('change', '#debtorDropDown', function(){
+
+		$.ajax({
+            url : '/get/party/details?id=' + this.value + '&type=debtor',
+            success: function(data) {
+                $('#billsTable').html(data['tbody']);
+                sortByDate();
+            }
+        });
+	});
+	$(document).on('change', '#creditorDropDown', function(){
+
+		$.ajax({
+            url : '/get/party/details?id=' + this.value + '&type=creditor',
+            success: function(data) {
+                $('#billsTable').html(data['tbody']);
+                sortByDate();
+            }
+        });
+	});
+
+function sortByDate() {
+  var tbody = document.querySelector("#billsTable");
+  // get trs as array for ease of use
+  var rows = [].slice.call(tbody.querySelectorAll("tr"));
+  
+  rows.sort(function(a,b) {
+    return convertDate(a.cells[1].innerHTML) - convertDate(b.cells[1].innerHTML);
+  });
+  
+  rows.forEach(function(v) {
+    tbody.appendChild(v); // note that .appendChild() *moves* elements
+  });
+}
+function convertDate(d) {
+  var p = d.split("-");
+  return +(p[2]+p[1]+p[0]);
+}
+</script>
+
+<style type="text/css">
+	.bill{
+		
+	}
+
+.billHead {
+  background-color: #36304a;
+  color: #fff;
+  font-family: "Montserrat-Medium" !important;
+  text-transform: uppercase;
+}
+
+
+	.billDetailHead{
+
+	}
+
+	.billDetail{
+
+	}
+</style>
+
+{% endblock %}

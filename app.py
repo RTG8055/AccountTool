@@ -1,5 +1,7 @@
 import requests
 from DBUtils import *
+import locale
+locale.setlocale(locale.LC_MONETARY, 'en_IN')
 
 import datetime
 
@@ -484,7 +486,7 @@ def getBillDetails():
     _id = request.args.get('id', 0)
     # (bill_no text, item_id text, qty real, rate real, amount real, foreign key(bill_no) REFERENCES invoice(bill_no))''')
 
-    data = getData('INVOICE_DETAILS','item_id, qty, rate, amount',"bill_no='{}'".format(_id))
+    data = getData('INVOICE_DETAILS natural join items','items.name, qty, rate, amount',"bill_no='{}'".format(_id))
     print data
 
 
@@ -551,28 +553,28 @@ def createBillsTable(data,columns, indexes,type_index):
     for row in data:
         bill_id=row[indexes[0]]
         bill_no='bill'+str(i)
-        tbody+="<tr id='"+bill_no+"'> "
+        tbody+="<tr id='"+bill_no+"' class='bill'> "
         tbody+='<td><a onclick="getBilldata(\'{}\')"><i class="mdi mdi-arrow-down">expand</a></td>'.format(bill_id)
         for index in indexes:
             if(columns[index] =='total_amt' and (row[type_index] == 'receipt' or row[type_index] == 'purchase')):
                 cred_sum+= float(row[index])
                 tbody+="<td></td>"
-                tbody+="<td>"+str(row[index])+"</td>"
+                tbody+="<td>"+locale.currency(float(row[index]),grouping=True,symbol=False)+"</td>"
             elif(columns[index] == 'total_amt'):
                 debt_sum+=float(row[index])
-                tbody+="<td>"+str(row[index])+"</td>"
+                tbody+="<td>"+locale.currency(float(row[index]),grouping=True,symbol=False)+"</td>"
                 tbody+="<td></td>"
             else:
                 tbody+="<td>"+str(row[index])+"</td>"
         tbody+="<td><a><i class='mdi mdi-border-color' onclick='editBill(\""+row[0]+"\")'>Edit</td></a>"
         tbody+="</tr>\
-        <tr style='display: none;' class='{}-toggle'>\
+        <tr style='display: none;' class='{}-toggle billDetailHead'>\
         <th></th>\
         <th>Item</th>\
         <th>Quantity</th>\
         <th>Rate</th>\
         <th>Total</th>\
-        </tr><tr style='display: none;' class='{}-toggle' id='{}-details'></tr>".format(bill_id,bill_id,bill_id)
+        </tr><tr style='display: none;' class='{}-toggle billDetail' id='{}-details'></tr>".format(bill_id,bill_id,bill_id)
 
         # <div class="collapse" id="invoice">
         #         <ul class="nav flex-column sub-menu">
@@ -583,12 +585,12 @@ def createBillsTable(data,columns, indexes,type_index):
         #             </a>
         #           </li>
         i+=1
-    tbody+="<tr id='totals' style='font-weight: bold;'><td>Total</td><td></td><td></td><td>"+str(debt_sum)+"</td><td>"+str(cred_sum)+"</td></tr>"
+    tbody+="<tr id='totals' style='font-weight: bold;'><td>Total</td><td></td><td></td><td>"+locale.currency(float(debt_sum),grouping=True,symbol=False)+"</td><td>"+locale.currency(float(cred_sum),grouping=True,symbol=False)+"</td></tr>"
     bal = debt_sum-cred_sum
     if(bal>=0):
-        tbody+="<tr id='balance' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td>{}</td><td></td>".format(bal)
+        tbody+="<tr id='balance' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td>{}</td><td></td>".format(locale.currency(float(bal),grouping=True,symbol=False))
     else:
-        tbody+="<tr id='balance' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td></td><td>{}</td>".format(-bal)
+        tbody+="<tr id='balance' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td></td><td>{}</td>".format(locale.currency(float(-bal),grouping=True,symbol=False))
     return tbody
 
 

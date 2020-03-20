@@ -1,0 +1,129 @@
+{% extends "theme2.html" %}
+
+{% block title %}
+DVK Polymers
+{% endblock %}
+
+{% block extCSS %}
+{% endblock %}
+
+{% block extJS %}
+
+{% endblock %}
+
+{% block body %}
+
+ <div class="main-panel">
+          <div class="content-wrapper">
+	      	  <div class="col-14 grid-margin stretch-card">
+	            <div class="card">
+	              <div class="card-body">
+	                <h4 class="card-title">View Bill Details</h4>
+	                <p class="card-description"> Party Name {{ }}<br> Bill No {{ }}</p>
+	                
+	                	<table class="table table-hover items">
+	                      <thead>
+	                        <tr>
+	                          <th>Item No.</th>
+	                          <th>Item Qty</th>
+	                          <th>Quantity</th>
+	                          <th>Amount</th>
+	                          <th></th>
+	                        </tr>
+	                      </thead>
+	                      <tbody id='billsTable'>
+	                        
+	                      </tbody>
+                		</table>
+	              </div>
+	            </div>
+	          </div>
+
+          </div>
+          <!-- content-wrapper ends -->
+          <!-- partial:../../partials/_footer.html -->
+          <footer class="footer">
+            <div class="d-sm-flex justify-content-center justify-content-sm-between">
+              <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2017 <a href="https://www.bootstrapdash.com/" target="_blank">BootstrapDash</a>. All rights reserved.</span>
+              <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i class="mdi mdi-heart text-danger"></i></span>
+            </div>
+          </footer>
+          <!-- partial -->
+        </div>
+{% endblock %}
+
+{% block end_extJS %}
+<script type="text/javascript">
+	function editBill(bill_no){
+		console.log("edit function");
+	}
+
+	function getBilldata(bill_no){
+		$.ajax({
+            url : '/get/bill/details?id=' +bill_no ,
+            success: function(data) {
+                $('#'+bill_no+'-details').html(data['itemDetails']);
+                $('#'+bill_no+'-details').attr('style','');
+            }
+        });
+	}
+
+</script>
+<script type="text/javascript">
+
+	$("a[id^=bill]").click(function(event) {
+    $("#bill" + $(this).attr('id').substr(5)).slideToggle("slow");
+    event.preventDefault();
+	});
+
+
+	$(document).on('change', '#typeDropDown', function(){
+
+		$.ajax({
+            url : '/get/parties?type=' + this.value,
+            success: function(data) {
+                $('#partyDropDown').html(data['dropDown']);
+            }
+        });
+	});
+	$(document).on('change', '#debtorDropDown', function(){
+
+		$.ajax({
+            url : '/get/party/details?id=' + this.value + '&type=debtor',
+            success: function(data) {
+                $('#billsTable').html(data['tbody']);
+                // sortByDate();
+            }
+        });
+	});
+	$(document).on('change', '#creditorDropDown', function(){
+
+		$.ajax({
+            url : '/get/party/details?id=' + this.value + '&type=creditor',
+            success: function(data) {
+                $('#billsTable').html(data['tbody']);
+                // sortByDate();
+            }
+        });
+	});
+
+function sortByDate() {
+  var tbody = document.querySelector("#billsTable");
+  // get trs as array for ease of use
+  var rows = [].slice.call(tbody.querySelectorAll("tr"));
+  
+  rows.sort(function(a,b) {
+    return convertDate(a.cells[1].innerHTML) - convertDate(b.cells[1].innerHTML);
+  });
+  
+  rows.forEach(function(v) {
+    tbody.appendChild(v); // note that .appendChild() *moves* elements
+  });
+}
+function convertDate(d) {
+  var p = d.split("-");
+  return +(p[2]+p[1]+p[0]);
+}
+</script>
+
+{% endblock %}
