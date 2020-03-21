@@ -38,7 +38,7 @@ DVK Polymers
                       			
                       		</div>
                       	</div>
-	                	<table class="table table-hover items">
+	                	<table class="table table-bordered table-hover items">
 	                      <thead>
 	                        <tr class='billHead'>
 	                        	<th></th>
@@ -89,17 +89,19 @@ DVK Polymers
                 		var newElement = document.createElement("tr");
                 		
         				newElement.innerHTML=data['itemDetails'][i];
+
                 		
-                		newElement.after(element);
+                		element.after(newElement);
 						// element.parentNode.insertBefore(newElement, element.nextSibling);
         				// var currentRow = myTable.insertRow(currentIndex);
 
                 	}
                 	else{
+
                 		element.html(data['itemDetails'][i]);
                 	}
             	}
-            	console.log(data);
+            	console.log("data successfully loaded!!");
                 $('.'+bill_no+'-toggle').attr('style','');
             }
         });
@@ -178,6 +180,7 @@ function convertDate(d) {
 
 	.billDetailHead{
 
+    background-color: #808080;
 	}
 
 	.billDetail{

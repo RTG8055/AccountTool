@@ -539,7 +539,10 @@ def createBillDetailsRow(data,columns,indexes):
     for row in data:
         trow.append('<td></td>')
         for index in indexes:
-            trow[i]+="<td>{}</td>".format(row[index])
+            if(columns[index]=='amount'):
+                trow[i]+="<td>{}</td>".format(locale.currency(float(row[index]),grouping=True,symbol=False))
+            else:
+                trow[i]+="<td>{}</td>".format(row[index])
         i+=1
         
     return trow
