@@ -5,7 +5,7 @@ DVK Polymers
 {% endblock %}
 
 {% block extCSS %}
-    <link rel="stylesheet" type="text/css" href="../static/css/invoice.css" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/invoice.css') }}" >
 {% endblock %}
 
 {% block extJS %}
@@ -19,17 +19,16 @@ DVK Polymers
 	      	  <div class="col-14 grid-margin stretch-card">
 	            <div class="card">
 	              <div class="card-body">
-	                <h4 class="card-title">Sales Goods</h4>
-	                <p class="card-description"> Give appropriate values</p>
-	                <form class="form-sample" action="/sales" method="post" id="salesForm">
+	                <h4 class="card-title">Invoice Edit</h4>
+	                <p class="card-description"> Change appropriate values</p>
+	                <form class="form-sample" action="/editBill" method="post" id="editForm">
 	                	   <div class="form-group">
 								<label for="billDate">Bill Date</label>
-    	                    	<input type="date" class='form-control' name="billDate" id='date' placeholder="Bill Date" required>
+    	                    	<input type="date" class='form-control' name="billDate" id='billDate' value="{{ vars.get('billDate') }}" placeholder="Bill Date" required>
     	                   </div>
 
 	                	<div class="form-group">
-	                			<label for="debtorDropDown">Party Name</label>
-                      			{{ vars.get('debtors')|safe }}
+	                			<label for="partyName">Party Name: {{ vars.get('partyList')|safe }}</label>
                       	</div>
                       	
 
@@ -47,7 +46,7 @@ DVK Polymers
 	                      </thead>
 	                      <tbody id='itemsTable'>
 	                        <tr id='item1'>
-	                        	<td id='sno1' >1.</td>
+	                        	<td id='sno1'>1.</td>
 	                          <td id='itemId1'>{{ vars.get('items')|safe }}
 	                          	<p class="card-description" id="currQty1"></p>
 	                          </td>
@@ -71,7 +70,7 @@ DVK Polymers
                 		</table>
                 		<div class="form-group">
 								<label for="narration">Narration</label>
-                				<textarea name="narration" form='salesForm' class='form-control' placeholder="Narration"></textarea>
+                				<textarea name="narration" form='editForm' class='form-control' placeholder="Narration"></textarea>
                 		</div>
                 		<div class="form-group">
 								<label for="totalAmount">Total:</label>
@@ -99,7 +98,7 @@ DVK Polymers
 
 {% block end_extJS %}
 
-<script src="../static/js/invoice.js"></script>
+<script src="{{ url_for('static', filename='js/invoice.js') }}"></script>
 <script type="text/javascript">
 
 	$(document).on('change', '.itemDropDown', function(){
@@ -113,6 +112,11 @@ DVK Polymers
     });
 });
 
+$('option:selected').each(function(){ $(this).prop('selected',true); });
+
+function loadDate(){
+	document.getElementById("billDate").value = "{{ vars.get('billDate') }}";
+}
 
 	function removeItem(currItem){
 		var myTable = document.getElementById("itemsTable");

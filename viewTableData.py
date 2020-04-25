@@ -4,7 +4,10 @@ conn = sqlite3.connect('example6.db')
 
 c = conn.cursor()
 
-data = c.execute("select * from creditors where balance = 'nan'")
+# data = c.execute("select * from creditors where balance = 'nan'")
+# data = c.execute("select 'BILL' < 'WATER' from dual")
+data = c.execute("select bill_no, narration, total_amt, bill_date, type from INVOICE where party_id =\'DB0004\' and bill_date > \'2020-02-01\' and bill_date < \'2020-03-08\'  order by bill_date")
+
 # c.execute("UPDATE creditors set balance='0.0' where creditor_id='CR0022'")
 # c.execute("UPDATE creditors set balance='0.0' where creditor_id='CR0023'")
 # c.execute("UPDATE creditors set balance='0.0' where creditor_id='CR0024'")

@@ -63,13 +63,16 @@ def insertData(table, columns, values):
     return data
 
 
-def getData(table, columns='*',condition='blank'):
+def getData(table, columns='*',condition='blank',extra='no'):
     conn = sqlite3.connect(databaseName)
     # conn = mysql.connect()
     if(condition != 'blank'):
         finalCondition = "where {}".format(condition)
     else:
         finalCondition = ''
+
+    if(extra!='no'):
+        finalCondition += " {}".format(extra)
     cursor = conn.cursor()
     print("Get Data SQL statement: ", repr("select {} from {} {}".format(columns, table, finalCondition)))
     data = cursor.execute("select {} from {} {}".format(columns, table, finalCondition))

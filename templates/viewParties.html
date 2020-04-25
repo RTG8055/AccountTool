@@ -21,7 +21,17 @@ DVK Polymers
 	              <div class="card-body">
 	                <h4 class="card-title">Party Accounts</h4>
 	                <p class="card-description"> Give appropriate values</p>
-	                <form class="form-sample" action="/viewparty" method="post" id="displayForm">
+	                <form class="form-sample" action="/viewpartybills" method="post" id="displayForm">
+
+                      <div class="form-group">
+                        <label for="fromDate">From Date</label>
+                        <input type="date" class='form-control' name="fromDate" id='searchFrom' placeholder="From Date" required>
+                     </div>
+
+                     <div class="form-group">
+                        <label for="toDate">To Date</label>
+                        <input type="date" class='form-control' name="toDate" id='searchTo' placeholder="To Date" required>
+                     </div>
                       	
                       	<div class="form-group">
                         	<label for="typeDropDown">Party Type</label>
@@ -32,12 +42,13 @@ DVK Polymers
                       		</select>
                       	</div>
 	                	
-	                	<div class="form-group" >
-							<label for="partyDropDown">Party Name</label>
-                      		<div id="partyDropDown">
-                      			
+	                	    <div class="form-group" >
+							            <label for="partyDropDown">Party Name</label>
+                      		<div id="partyDropDown">	
                       		</div>
                       	</div>
+
+
 	                	<table class="table table-bordered table-hover items">
 	                      <thead>
 	                        <tr class='billHead'>
@@ -73,8 +84,11 @@ DVK Polymers
 
 {% block end_extJS %}
 <script type="text/javascript">
-	function editBill(bill_no){
+
+	function editBillRedirect(bill_no){
 		console.log("edit function");
+    console.log(this);
+    window.location = '/editBill?id=' + bill_no;
 	}
 
 	function getBilldata(bill_no){
@@ -88,7 +102,7 @@ DVK Polymers
                 		var myTable = document.getElementById("billsTable");
                 		var newElement = document.createElement("tr");
                 		
-        				newElement.innerHTML=data['itemDetails'][i];
+        				    newElement.innerHTML=data['itemDetails'][i];
 
                 		
                 		element.after(newElement);
@@ -125,20 +139,47 @@ DVK Polymers
             }
         });
 	});
+
+  // $(document).on('change','#searchFrom', function(){
+
+  //   var from = $("#searchFrom").val();
+  //   var to = $("#searchTo").val();
+
+  //   var id = $()
+
+
+  // });
 	$(document).on('change', '#debtorDropDown', function(){
 
+    var from = $("#searchFrom").val();
+    var to = $("#searchTo").val();
+
+    if(!from)
+      from="9999";
+    if(!to)
+      to="9999";
+
 		$.ajax({
-            url : '/get/party/details?id=' + this.value + '&type=debtor',
+            url : '/get/party/bills?id=' + this.value + '&type=debtor&from=' + String(from) + '&to='+String(to),
             success: function(data) {
                 $('#billsTable').html(data['tbody']);
                 sortByDate();
             }
         });
 	});
+
 	$(document).on('change', '#creditorDropDown', function(){
 
+    var from = $("#searchFrom").val();
+    var to = $("#searchTo").val();
+
+    if(!from)
+      from="9999";
+    if(!to)
+      to="9999";
+
 		$.ajax({
-            url : '/get/party/details?id=' + this.value + '&type=creditor',
+            url : '/get/party/bills?id=' + this.value + '&type=creditor&from=' + String(from) + '&to='+String(to),
             success: function(data) {
                 $('#billsTable').html(data['tbody']);
                 sortByDate();
@@ -148,20 +189,51 @@ DVK Polymers
 
 function sortByDate() {
   var tbody = document.querySelector("#billsTable");
+
+  var from = convertDateNew($("#searchFrom").val());
+  var to = convertDateNew($("#searchTo").val());
+
   // get trs as array for ease of use
-  var rows = [].slice.call(tbody.querySelectorAll("tr"));
+  var rows = [].slice.call(tbody.querySelectorAll(".bill"));
   
   rows.sort(function(a,b) {
-    return convertDate(a.cells[1].innerHTML) - convertDate(b.cells[1].innerHTML);
+    return convertDate(a.cells[2].innerHTML) - convertDate(b.cells[2].innerHTML);
   });
   
   rows.forEach(function(v) {
+    // console.log(v);
+
+    var show = true;
+    var date = convertDateNew(v.cells[2].innerHTML);
+
+    if (from && date < from)
+      show = false;
+    
+    //if to date is valid and row date is greater than to date, hide the row
+    if (to && date > to)
+      show = false;
+
+    if (show)
+      tbody.appendChild(v); // note that .appendChild() *moves* elements
+    else
+      tbody.remove(v);
+
+
+  });
+
+  var rowsEnd = [].slice.call(tbody.querySelectorAll(".billEnd"));
+  rowsEnd.forEach(function(v) {
     tbody.appendChild(v); // note that .appendChild() *moves* elements
   });
+
 }
 function convertDate(d) {
   var p = d.split("-");
   return +(p[2]+p[1]+p[0]);
+}
+function convertDateNew(d) {
+  var p = d.split(" ")[0].split("-");
+  return +(p[0]+p[1]+p[2]);
 }
 </script>
 

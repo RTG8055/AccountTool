@@ -10,7 +10,21 @@
 {
 	width: 80px !important;
 }
-table.items{
+.rownumber
+{
+	width: 10px !important;
+}
+
+.Amount
+{
+	width: 120px !important;
+}
+
+.itemsDropDown
+{
+	width: 40px !important;
+}
+table.items {
   table-layout: auto;
-  width: 180px !important; 
+  width: 100%;  
 }

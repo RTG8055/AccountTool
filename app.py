@@ -35,8 +35,8 @@ def logout():
 def dispatch():
     if(session.get('user_id') and session.get('access_group') == 'all_access'):
         try:
-            itemData = getData(itemsTable, 'name, item_id')
-            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0)
+            itemData = getData(itemsTable, 'name, item_id',extra='order by name')
+            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0,"class ='itemDropDown' style='width:120px;'")
 
             debtorsData = getData(debtorsTable,'name, debtor_id')
             debtorsDropDown = createDropDown(debtorsData, 'debtor','Select Party Name', 1, 0)
@@ -70,8 +70,8 @@ def enterDispatch():
         return redirect('/dispatch')
 
 
-@app.route('/viewparty')
-def viewParty():
+@app.route('/viewpartybills')
+def viewPartyBills():
     if(session.get('user_id') and session.get('access_group') == 'all_access'):
         try:
             return showWebPage('viewParties.html',{})
@@ -254,8 +254,8 @@ def enterReceipt():
 def sales():
     if(session.get('user_id') and session.get('access_group') == 'all_access'):
         try:
-            itemData = getData(itemsTable, 'name, item_id')
-            itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,"class ='itemDropDown'")
+            itemData = getData(itemsTable, 'name, item_id',extra='order by name')
+            itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,"class ='itemDropDown' style='width:120px;'")
 
             debtorsData = getData(debtorsTable,'name, debtor_id')
             debtorsDropDown = createDropDown(debtorsData, "debtor' id='debtorDropDown",'Select Party Name', 1, 0)
@@ -304,8 +304,8 @@ def enterSales():
 def purchase():
     if(session.get('user_id') and session.get('access_group') == 'all_access'):
         try:
-            itemData = getData(itemsTable, 'name, item_id')
-            itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,"class ='itemDropDown'")
+            itemData = getData(itemsTable, 'name, item_id',extra='order by name')
+            itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,"class ='itemDropDown' style='width:120px;'")
 
             creditorsData = getData(creditorsTable,'name, creditor_id')
             creditorsDropDown = createDropDown(creditorsData, "creditor' id='creditorDropDown",'Select Party Name', 1, 0)
@@ -353,8 +353,8 @@ def enterPurchase():
 def receive():
     if(session.get('user_id') and session.get('access_group') == 'all_access'):
         try:
-            itemData = getData(itemsTable, 'name, item_id')
-            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0)
+            itemData = getData(itemsTable, 'name, item_id',extra='order by name')
+            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0,)
 
             creditorsData = getData(creditorsTable,'name, creditor_id')
             creditorsDropDown = createDropDown(creditorsData, 'creditor','Select Party Name', 1, 0)
@@ -390,6 +390,43 @@ def enterReceive():
     else:
         return redirect('/receive')
 
+@app.route('/editbill/<billno>/<partyType>')
+def editBill(billno,partyType):
+    if(session.get('user_id')):
+        print("inside editBIll:", billno)
+
+        invoiceData = getData('INVOICE',"party_id, narration, total_amt, bill_date, type","bill_no ='{}'".format(billno))[0]
+        print invoiceData
+        selectedPartyId= invoiceData[0]
+        selectedBillDate = invoiceData[3].split(' ')[0]
+
+        invoiceDetailsData = getData('INVOICE_DETAILS natural join items','items.name, qty, rate, amount',"bill_no='{}'".format(billno))
+        print invoiceDetailsData
+
+        # itemDetails = createBillDetailsRow(data,['item_id','qty','rate','amount'],[0,1,2,3])
+
+        # getData('invoice','')
+
+        itemData = getData(itemsTable, 'name, item_id',extra='order by name')
+        itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,"class ='itemDropDown' style='width:120px;'")
+
+        createBillsTable
+
+        if(partyType=='debtor'):
+            debtorsData = getData(debtorsTable,'name, debtor_id')
+            selectedPartyName = getData(debtorsTable,'name',"debtor_id='{}'".format(selectedPartyId))[0][0]
+            debtorsDropDown = createDropDown(debtorsData, "debtor' id='debtorDropDown",'Select Party Name', 1, 0,selected=selectedPartyName)
+            parties = debtorsDropDown
+
+        else:
+            creditorsData = getData(creditorsTable,'name, creditor_id')
+            selectedPartyName = getData(creditorsTable,'name',"creditor_id='{}'".format(selectedPartyId))[0][0]
+            creditorsDropDown = createDropDown(creditorsData, "creditor' id='creditorDropDown",'Select Party Name', 1, 0,selected=selectedPartyName)
+            parties = creditorsDropDown
+        partyType+='s'
+        return showWebPage('editBill.html', {'billDate': selectedBillDate, 'partyName': selectedPartyName,'items':itemDropDown, 'partyList':parties})
+    else:
+        return redirect('/')
 
 
 @app.route('/login')
@@ -397,7 +434,7 @@ def showSignUp():
     if(session.get('user_id')):
         return redirect('/')
     else:
-        return showWebPage('login.html',{})
+        return render_template('login.html',vars={})
 
 @app.route('/login',methods=['POST'])
 def validateLogin():
@@ -498,16 +535,24 @@ def getBillDetails():
     })
     
 
-@app.route("/get/party/details")
+@app.route("/get/party/bills")
 def getPartyDetails():
     _id = request.args.get('id', 0)
     _type = request.args.get('type', 0)
+    _from = request.args.get('from', 0)
+    _to = request.args.get('to', 0)
+    FILTER = ''
+    if(_from != "9999"):
+        FILTER += "and bill_date > '{}'".format(_from)
+    if(_to != "9999"):
+        FILTER += "and bill_date < '{}'".format(_to)
              # (bill_no text, party_id text, narration text, total_amt real, type text,bill_date text)''')
 
-    data = getData('INVOICE','bill_no, narration, total_amt, bill_date, type',"party_id='{}'".format(_id))
+    print "to and from : ", _to,_from
+    data = getData('INVOICE',"bill_no, narration, total_amt, bill_date, type","party_id ='{}' {}".format(_id,FILTER)," order by bill_date")
     print data
 
-    tbody = createBillsTable(data,['bill_no', 'narration', 'total_amt', 'bill_date', 'type'],[0,3,2],4)
+    tbody = createBillsTable(data,['bill_no', 'narration', 'total_amt', 'bill_date', 'type'],[0,3,2],4,_type)
     print tbody
     return jsonify({
         "tbody"        :  tbody,
@@ -547,8 +592,36 @@ def createBillDetailsRow(data,columns,indexes):
         
     return trow
 
+def createEditInventoryBillTable(data,column,indexes,type_index,partyType):
+    '''
+    <tr id='item1'>
+                                <td id='sno1'>1.</td>
+                              <td id='itemId1'>{{ vars.get('items')|safe }}
+                                <p class="card-description" id="currQty1"></p>
+                              </td>
+                              <td id='itemQty1'>
+                                <input name='quantity1' type="number" id="quantity1" placeholder="Quantity in kGs" class='qty' title="Kgs" step="0.01" required>
+                              </td>
+                              <td id='itemQtyBag1'>
+                                <input type="number" id="quantityBag1" placeholder="Quantity in Bags" class='qtyBag' title="Bags" step="0.01">
+                              </td>
+                              <td id='itemRate1'>
+                                <input name='rate1' type="number" id="Rate1" placeholder="Rate per kG" class='rate' title="Enter Rate" step="0.01" required>
+                              </td>
+                              <td id='itemAmt1'>
+                                <input name='amount1' type="number" id="Amount" placeholder="Amount" title="Amount" step="0.01" class="Amount" readonly>
+                              </td>
+                              <td id='addItem'><i class="mdi mdi-backspace icon-md" style='float:left;' onclick="removeItem('1')"></i>
+                                <button id='addButton' class="btn btn-block btn-lg btn-gradient-primary mt-4" onclick="addItem('2');">+ Add an Item</button>
+                              </td>
+                            </tr>
+    '''
+    pass
+    return
 
-def createBillsTable(data,columns, indexes,type_index):
+
+
+def createBillsTable(data,columns, indexes,type_index,partyType):
     tbody=''
     i=1
     debt_sum=0.0
@@ -569,7 +642,8 @@ def createBillsTable(data,columns, indexes,type_index):
                 tbody+="<td></td>"
             else:
                 tbody+="<td>"+str(row[index])+"</td>"
-        tbody+="<td><a><i class='mdi mdi-border-color' onclick='editBill(\""+row[0]+"\")'>Edit</td></a>"
+        tbody+="<td><a href='/editbill/{}/{}'><i class='mdi mdi-border-color'>Edit</td></a>".format(row[0],partyType)
+
         tbody+="</tr>\
         <tr style='display: none;' class='{}-toggle billDetailHead'>\
         <th></th>\
@@ -578,22 +652,13 @@ def createBillsTable(data,columns, indexes,type_index):
         <th>Rate</th>\
         <th>Total</th>\
         </tr><tr style='display: none;' class='{}-toggle billDetail' id='{}-details'></tr>".format(bill_id,bill_id,bill_id)
-
-        # <div class="collapse" id="invoice">
-        #         <ul class="nav flex-column sub-menu">
-        #           <li class="nav-item">
-        #             <a class="nav-link" href="/sales">
-        #               <span class="menu-title">Sales</span>
-        #               <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-        #             </a>
-        #           </li>
         i+=1
-    tbody+="<tr id='totals' style='font-weight: bold;'><td>Total</td><td></td><td></td><td>"+locale.currency(float(debt_sum),grouping=True,symbol=False)+"</td><td>"+locale.currency(float(cred_sum),grouping=True,symbol=False)+"</td></tr>"
+    tbody+="<tr id='totals' style='font-weight: bold;' class='billEnd'><td>Total</td><td></td><td></td><td>"+locale.currency(float(debt_sum),grouping=True,symbol=False)+"</td><td>"+locale.currency(float(cred_sum),grouping=True,symbol=False)+"</td></tr>"
     bal = debt_sum-cred_sum
     if(bal>=0):
-        tbody+="<tr id='balance' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td>{}</td><td></td>".format(locale.currency(float(bal),grouping=True,symbol=False))
+        tbody+="<tr id='balance' class='billEnd' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td>{}</td><td></td>".format(locale.currency(float(bal),grouping=True,symbol=False))
     else:
-        tbody+="<tr id='balance' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td></td><td>{}</td>".format(locale.currency(float(-bal),grouping=True,symbol=False))
+        tbody+="<tr id='balance' class='billEnd' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td></td><td>{}</td>".format(locale.currency(float(-bal),grouping=True,symbol=False))
     return tbody
 
 
@@ -611,12 +676,20 @@ def checkPartyItemExists(_party_name, _type):
     else:
         return True
 
-def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex,className="class='form-control'"):
+def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex,className="class='form-control'",selected='default'):
     dropDown = "<select name='"+dropDownName+"'"+ className +" required> "
-    dropDown += "<option selected='selected' disabled='disabled'>"+defaultOption+"</option>"
-    for row in data:
-        dropDown += "<option value='" + str(row[valueIndex]) + "'> " + str(row[nameIndex]) + "</option>"
-    dropDown +="</select>"
+    if(selected=='default'):
+        dropDown += "<option selected='selected' disabled='disabled'>"+defaultOption+"</option>"
+        for row in data:
+            dropDown += "<option value='" + str(row[valueIndex]) + "'> " + str(row[nameIndex]) + "</option>"
+        dropDown +="</select>"
+    else:
+        for row in data:
+            if(row[nameIndex]==selected):
+                dropDown += "<option value='" + str(row[valueIndex]) + "' selected> " + str(row[nameIndex]) + "</option>"
+            else:
+                dropDown += "<option value='" + str(row[valueIndex]) + "'> " + str(row[nameIndex]) + "</option>"
+        dropDown +="</select>"
     return dropDown
 
 

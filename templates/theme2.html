@@ -6,26 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>
       {% block title %}
-
+      Edit Bill
       {% endblock %}
     </title>
     <!-- plugins:css -->
-    <link rel="stylesheet" type="text/css" href="../static/css/materialdesignicons.min.css" >
-    <link rel="stylesheet" type="text/css" href="../static/css/vendor.bundle.base.min.css" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/materialdesignicons.min.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/vendor.bundle.base.min.css') }}" >
     <!-- endinject -->
     <!-- Plugin css for this page -->
     <!-- End plugin css for this page -->
     <!-- inject:css -->
     <!-- endinject -->
     <!-- Layout styles -->
-    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- End layout styles -->
-    <link rel="shortcut icon" href="../static/image/favicon.png" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='image/favicon.png') }}" />
 
 {% block extCSS %}
 
 {% endblock %}
-<script src="../static/js/jquery-3.1.1.min.js"></script>
+<script src="{{ url_for('static', filename='js/jquery-3.1.1.min.js') }}"></script>
     <!-- <link rel="stylesheet" type="text/css" href="../static/css/semantic.min.css"> -->
 <!-- <script src="../static/js/semantic.min.js"></script> -->
 {% block extJS %}
@@ -40,8 +40,8 @@
 {%if vars.namex%}
 <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
   <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
-    <a class="navbar-brand brand-logo" href="/home"><img src="../static/image/logo.svg" alt="logo" /></a>
-    <a class="navbar-brand brand-logo-mini" href="index.html"><img src="../static/image/logo-mini.svg" alt="logo" /></a>
+    <a class="navbar-brand brand-logo" href="/home"><img src="{{ url_for('static', filename='image/logo.svg') }}" alt="logo" /></a>
+    <a class="navbar-brand brand-logo-mini" href="index.html"><img src="{{ url_for('static', filename='image/logo-mini.svg') }}" alt="logo" /></a>
   </div>
   <div class="navbar-menu-wrapper d-flex align-items-stretch">
     <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
@@ -52,7 +52,7 @@
       <li class="nav-item nav-profile dropdown">
         <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
           <div class="nav-profile-img">
-            <img src="../static/image/faces/face1.jpg" alt="image">
+            <img src="{{ url_for('static', filename='image/faces/face1.jpg') }}" alt="image">
             <span class="availability-status online"></span>
           </div>
           <div class="nav-profile-text">
@@ -98,7 +98,7 @@
             <li class="nav-item nav-profile">
               <a href="/home" class="nav-link">
                 <div class="nav-profile-image">
-                  <img src="../static/image/faces/face1.jpg" alt="profile">
+                  <img src="{{ url_for('static', filename='image/faces/face1.jpg') }}" alt="profile">
                   <span class="login-status online"></span>
                   <!--change to offline or busy as needed-->
                 </div>
@@ -195,7 +195,7 @@
                     </a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="/viewparty">
+                    <a class="nav-link" href="/viewpartybills">
                       <span class="menu-title">View Account</span>
                       <i class="mdi mdi-format-list-bulleted menu-icon"></i>
                     </a>
@@ -212,11 +212,11 @@
               </a>
               <div class="collapse" id="general-pages">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="pages/samples/blank-page.html">Monthly </a></li>
-                  <li class="nav-item"> <a class="nav-link" href="pages/samples/login.html"> Yearly </a></li>
-                  <li class="nav-item"> <a class="nav-link" href="pages/samples/register.html"> Purchase </a></li>
-                  <li class="nav-item"> <a class="nav-link" href="pages/samples/error-404.html"> Sales</a></li>
-                  <li class="nav-item"> <a class="nav-link" href="pages/samples/error-500.html"> Inventory</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="/login"> Monthly </a></li>
+                  <li class="nav-item"> <a class="nav-link" href="/login"> Yearly </a></li>
+                  <li class="nav-item"> <a class="nav-link" href="/login"> Purchase </a></li>
+                  <li class="nav-item"> <a class="nav-link" href="/login"> Sales</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="/login"> Inventory</a></li>
                 </ul>
               </div>
             </li>
@@ -234,14 +234,14 @@
     <!-- container-scroller -->
 </div>
     <!-- plugins:js -->
-    <script src="../static/js/vendor.bundle.base.js"></script>
+    <script src="{{ url_for('static', filename='js/vendor.bundle.base.js') }}"></script>
     <!-- endinject -->
     <!-- Plugin js for this page -->
     <!-- End plugin js for this page -->
     <!-- inject:js -->
-    <script src="../static/js/off-canvas.js"></script>
-    <script src="../static/js/hoverable-collapse.js"></script>
-    <script src="../static/js/misc.js"></script>
+    <script src="{{ url_for('static', filename='js/off-canvas.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/hoverable-collapse.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/misc.js') }}"></script>
     <!-- endinject -->
 {% block end_extJS %}
 
