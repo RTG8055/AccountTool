@@ -194,14 +194,16 @@ function sortByDate() {
   var to = convertDateNew($("#searchTo").val());
 
   // get trs as array for ease of use
-  var rows = [].slice.call(tbody.querySelectorAll(".bill"));
-  
+  var rows = [].slice.call(tbody.querySelectorAll(".bill-row"));
+  //console.log(rows);
   rows.sort(function(a,b) {
+  	//console.log(a,b);
     return convertDate(a.cells[2].innerHTML) - convertDate(b.cells[2].innerHTML);
   });
   
   rows.forEach(function(v) {
-    // console.log(v);
+    //console.log(v);
+    var classNam= c.className;
 
     var show = true;
     var date = convertDateNew(v.cells[2].innerHTML);
@@ -212,6 +214,9 @@ function sortByDate() {
     //if to date is valid and row date is greater than to date, hide the row
     if (to && date > to)
       show = false;
+
+    if(classNam.contains("billDetail"))
+	  	show=true;
 
     if (show)
       tbody.appendChild(v); // note that .appendChild() *moves* elements
