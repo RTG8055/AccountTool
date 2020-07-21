@@ -12,10 +12,12 @@
  - run application from bash ``` python app.py ```
 
 ### Environement Details
- - Development environment: ```https://account-tool-dev.herokuapp.com/```
+ - Development environment: 
+   - weblink: https://account-tool-dev.herokuapp.com/
    - user id: abc@gmail.com
    - password: 123
    
- - Master environment: ```http://dvkpoly.herokuapp.com/```
+ - Master environment: 
+   - weblink: http://dvkpoly.herokuapp.com/
    - user id: abc@gmail.com
    - password: 123
