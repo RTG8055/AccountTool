@@ -414,8 +414,6 @@ def enterReceive():
 
     except Exception as e:
         return json.dumps({'errory': str(e)})
-    else:
-        return redirect('/receive')
 
 
 @app.route('/editbill/<billno>/<partyType>')
@@ -423,37 +421,35 @@ def editBill(billno, partyType):
     if (session.get('user_id')):
         print("inside editBIll:", billno)
 
-        invoiceData = \
-        getData('INVOICE', "party_id, narration, total_amt, bill_date, type", "bill_no ='{}'".format(billno))[0]
-        print invoiceData
+        invoiceData = getData('INVOICE', "party_id, narration, total_amt, bill_date, type", "bill_no ='{}'".format(billno))[0]
+        print(invoiceData)
         selectedPartyId = invoiceData[0]
         selectedBillDate = invoiceData[3].split(' ')[0]
 
         invoiceDetailsData = getData('INVOICE_DETAILS natural join items', 'items.name, qty, rate, amount',
                                      "bill_no='{}'".format(billno))
-        print invoiceDetailsData
+        print(invoiceDetailsData)
 
         # itemDetails = createBillDetailsRow(data,['item_id','qty','rate','amount'],[0,1,2,3])
 
         # getData('invoice','')
 
-        itemData = getData(itemsTable, 'name, item_id', extra='order by name')
+        itemData = getData(itemsTable, 'name, item_id', extra='order by name');
         itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,
-                                      "class ='itemDropDown' style='width:120px;'")
+                                      "class ='itemDropDown' style='width:120px;'");
 
         if (partyType == 'debtor'):
-            debtorsData = getData(debtorsTable, 'name, debtor_id')
-            selectedPartyName = getData(debtorsTable, 'name', "debtor_id='{}'".format(selectedPartyId))[0][0]
+            debtorsData = getData(debtorsTable, 'name, debtor_id');
+            selectedPartyName = getData(debtorsTable, 'name', "debtor_id='{}'".format(selectedPartyId))[0][0];
             debtorsDropDown = createDropDown(debtorsData, "debtor' id='debtorDropDown", 'Select Party Name', 1, 0,
-                                             selected=selectedPartyName)
-            parties = debtorsDropDown
-
+                                             selected=selectedPartyName);
+            parties = debtorsDropDown;
         else:
-            creditorsData = getData(creditorsTable, 'name, creditor_id')
-            selectedPartyName = getData(creditorsTable, 'name', "creditor_id='{}'".format(selectedPartyId))[0][0]
+            creditorsData = getData(creditorsTable, 'name, creditor_id');
+            selectedPartyName = getData(creditorsTable, 'name', "creditor_id='{}'".format(selectedPartyId))[0][0];
             creditorsDropDown = createDropDown(creditorsData, "creditor' id='creditorDropDown", 'Select Party Name', 1,
-                                               0, selected=selectedPartyName)
-            parties = creditorsDropDown
+                                               0, selected=selectedPartyName);
+            parties = creditorsDropDown;
         partyType += 's'
         return showWebPage('editBill.html',
                            {'billDate': selectedBillDate, 'partyName': selectedPartyName, 'items': itemDropDown,
@@ -472,9 +468,9 @@ def showSignUp():
 
 @app.route('/login', methods=['POST'])
 def validateLogin():
-    print(os.getcwd())
-    print(os.path.realpath(databaseName))
-    # conn = sqlite3.connect("C:\\Users\\rahagaga\\Documents\\Rahul\\github\\AccountTool\\example6.db")
+    # print(os.getcwd())
+    # print(os.path.realpath(databaseName))
+    # print(os.getcwd())
     conn = sqlite3.connect(databaseName)
     # conn = mysql.connect()
     cursor = conn.cursor()
@@ -484,7 +480,7 @@ def validateLogin():
         # captcha_response = request.form.get('g-recaptcha-response')
         print(_email + " " + _password)
         # validate the received values
-    # conn = sqlite3.connect(os.path.realpath(databaseName))
+        # conn = sqlite3.connect(os.path.realpath(databaseName))
         if _email and _password:
 
             # All Good, let's call MySQL
@@ -506,7 +502,7 @@ def validateLogin():
                     session['access_group'] = str(data[0][4])
                     return redirect('/')
                 else:
-                    print 'not validated'
+                    print('not validated')
                     return showWebPage('login.html', {'error': "not validated"})
             except Exception as e:
                 return json.dumps({'errory': str(e)})
@@ -528,7 +524,7 @@ def getBal():
         currBal = getData(debtorsTable, 'balance', "debtor_id = '{}'".format(_id))[0][0]
     else:
         currBal = getData(creditorsTable, 'balance', "creditor_id = '{}'".format(_id))[0][0]
-    print currBal
+    print(currBal)
     return jsonify({
         "currBal": currBal,
     })
@@ -538,7 +534,7 @@ def getBal():
 def getQty():
     _id = request.args.get('id', 0)
     currQty = getData(itemsTable, 'curr_qty', "item_id = '{}'".format(_id))[0][0]
-    print currQty
+    print(currQty)
     return jsonify({
         "currQty": currQty,
     })
@@ -547,14 +543,14 @@ def getQty():
 @app.route("/get/parties")
 def getParties():
     _type = request.args.get('type', 0)
-    print "abcd"
+    print("abcd")
     if (_type == 'debtor'):
         debtorsData = getData(debtorsTable, 'name, debtor_id')
         dropDown = createDropDown(debtorsData, "debtor' id='debtorDropDown", 'Select Party Name', 1, 0)
     else:
         creditorsData = getData(creditorsTable, 'name, creditor_id')
         dropDown = createDropDown(creditorsData, "creditor' id='creditorDropDown", 'Select Party Name', 1, 0)
-    print dropDown
+    print(dropDown)
     return jsonify({
         "dropDown": dropDown,
     })
@@ -566,10 +562,10 @@ def getBillDetails():
     # (bill_no text, item_id text, qty real, rate real, amount real, foreign key(bill_no) REFERENCES invoice(bill_no))''')
 
     data = getData('INVOICE_DETAILS natural join items', 'items.name, qty, rate, amount', "bill_no='{}'".format(_id))
-    print data
+    print(data)
 
     itemDetails = createBillDetailsRow(data, ['item_id', 'qty', 'rate', 'amount'], [0, 1, 2, 3])
-    print itemDetails
+    print(itemDetails)
     return jsonify({
         "itemDetails": itemDetails,
     })
@@ -588,13 +584,13 @@ def getPartyDetails():
         FILTER += "and bill_date < '{}'".format(_to)
         # (bill_no text, party_id text, narration text, total_amt real, type text,bill_date text)''')
 
-    print "to and from : ", _to, _from
+    print("to and from : ", _to, _from)
     data = getData('INVOICE', "bill_no, narration, total_amt, bill_date, type", "party_id ='{}' {}".format(_id, FILTER),
                    " order by bill_date")
-    print data
+    print(data)
 
     tbody = createBillsTable(data, ['bill_no', 'narration', 'total_amt', 'bill_date', 'type'], [0, 3, 2], 4, _type)
-    print tbody
+    print(tbody)
     return jsonify({
         "tbody": tbody,
     })
@@ -718,7 +714,7 @@ def checkPartyItemExists(_party_name, _type):
     else:
         table = creditorsTable
     data = getData(table, '*', "name='{}'".format(_party_name))
-    print data
+    print(data)
     if (len(data) == 0):
         return False
     else:
