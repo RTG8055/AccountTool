@@ -4,15 +4,15 @@
 DVK Polymers
 {% endblock %}
 
+{% block extCSS %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/select2.min.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/select2-bootstrap.min.css') }}" >
+{% endblock %}
 
 {% block body %}
 
  <div class="main-panel">
           <div class="content-wrapper">
-
-
-
-
 	      	  <div class="col-12 grid-margin stretch-card">
 	            <div class="card">
 	              <div class="card-body">
@@ -21,12 +21,34 @@ DVK Polymers
 	                <form class="form-sample" action="/dispatch" method="post">
 	                	<div class="row">
 	                        <div class="col-md-6">
-	                          <div class="form-group row">
-	                            <label class="col-sm-4 col-form-label">Select Item Name</label>
-	                            <div class="col-sm-8">
-	                              {{ vars.get('items')|safe }}	
-	                            </div>
-	                          </div>
+                                <div class="form-group row">
+                                      <label class="col-sm-4 col-form-label">Select Item Name</label>
+                                     <div class="col-sm-8">
+                                      <select class="js-example-basic-single" style="width:100%">
+                        <option value="AL">Alabama</option>
+                        <option value="WY">Wyoming</option>
+                        <option value="AM">America</option>
+                        <option value="CA">Canada</option>
+                        <option value="RU">Russia</option>
+                      </select>
+                                         </div>
+                                </div>
+                                <div class="form-group">
+                      <label>Single select box using select 2</label>
+                      <select class="js-example-basic-single" style="width:100%">
+                        <option value="AL">Alabama</option>
+                        <option value="WY">Wyoming</option>
+                        <option value="AM">America</option>
+                        <option value="CA">Canada</option>
+                        <option value="RU">Russia</option>
+                      </select>
+                    </div>
+{#	                          <div class="form-group row">#}
+{#	                            <label class="col-sm-4 col-form-label">Select Item Name</label>#}
+{#	                            <div class="col-sm-8">#}
+{#	                              {{ vars.get('items')|safe }}	#}
+{#	                            </div>#}
+{#	                          </div>#}
 	                        </div>
 	                        <div class="col-md-6">
 	                          <div class="form-group row">
@@ -77,5 +99,7 @@ DVK Polymers
 
 {% block end_extJS %}
 
+    <script src="{{ url_for('static', filename='js/select2.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/typeahead.js') }}"></script>
 
 {% endblock %}

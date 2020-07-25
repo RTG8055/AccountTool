@@ -4,23 +4,13 @@
 DVK Polymers
 {% endblock %}
 
-{% block extJS %}
-<script type="text/javascript">
-	$('#search-select')
-  .dropdown();
-$('#search-select2')
-  .dropdown();
-
-  $('#search-select3')
-  .dropdown();
-    console.log( "ready!" );
-
-    $('.ui.dropdown').dropdown();
-</script>
+{% block extCSS %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/select2.min.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/select2-bootstrap.min.css') }}" >
 {% endblock %}
 
 {% block body %}
- <div class="main-panel" onloac="convertDropdown()">
+ <div class="main-panel">
           <div class="content-wrapper">
 
 	      	  <div class="col-12 grid-margin stretch-card">
@@ -28,27 +18,29 @@ $('#search-select2')
 	              <div class="card-body">
 	                <h4 class="card-title">Received Goods</h4>
 	                <p class="card-description"> Give appropriate values</p>
-<div>
-	<select class="ui search selection dropdown" id="search-select2">
-	  <option value="">State</option>
-	  <option value="AL">Alabama</option>
-	  <option value="AK">Alaska</option>
-	  <option value="BK">Blaska</option>
-	</select>
-</div>
-
-	
-
 	                <form class="form-sample" action="/receive" method="post">
 	                	<div class="row">
 	                        <div class="col-md-6">
-	                          <div class="form-group row">
-
-	                            <label class="col-sm-4 col-form-label">Select Item Name</label>
-	                            <div class="col-sm-8">
-	                              {{ vars.get('items')|safe }}	
-	                            </div>
-	                          </div>
+                                 <div class="form-group row" >
+                                      <label class="col-sm-4 col-form-label">Select Item Name</label>
+                                     <div class="col-sm-8">
+                                         <select class="form-control js-example-basic-single" style="width:100%">
+{#                                      <select class="js-example-basic-single select2-hidden-accessible" style="width:100%" data-select2-id="1" tabindex="-1" aria-hidden="true">#}
+                                            <option value="AL" data-select2-id="3">Alabama</option>
+                                            <option value="WY" data-select2-id="18">Wyoming</option>
+                                            <option value="AM" data-select2-id="19">America</option>
+                                            <option value="CA" data-select2-id="20">Canada</option>
+                                            <option value="RU" data-select2-id="21">Russia</option>
+                                      </select>
+                                         </div>
+                                </div>
+{#	                          <div class="form-group row">#}
+{##}
+{#	                            <label class="col-sm-4 col-form-label">Select Item Name</label>#}
+{#	                            <div class="col-sm-8">#}
+{#	                              {{ vars.get('items')|safe }}	#}
+{#	                            </div>#}
+{#	                          </div>#}
 	                        </div>
 	                        <div class="col-md-6">
 	                          <div class="form-group row">
@@ -116,18 +108,8 @@ $('#search-select2')
 {% endblock %}
 
 {% block end_extJS %}
-<script type="text/javascript">
-	function convertDropdown(){
-		$('.ui.dropdown')
-  		.dropdown();
 
-  		$('#search-select3')
-  .dropdown();
-$('#search-select2')
-  .dropdown();
-	}
-
-
-</script>
+    <script src="{{ url_for('static', filename='js/select2.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/typeahead.js') }}"></script>
 
 {% endblock %}

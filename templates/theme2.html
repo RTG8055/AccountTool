@@ -11,23 +11,22 @@
     </title>
     <!-- plugins:css -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/materialdesignicons.min.css') }}" >
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/vendor.bundle.base.min.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/vendor.bundle.base.css') }}" >
     <!-- endinject -->
     <!-- Plugin css for this page -->
+  {% block extCSS %}
+
+  {% endblock %}
     <!-- End plugin css for this page -->
     <!-- inject:css -->
     <!-- endinject -->
     <!-- Layout styles -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- End layout styles -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='image/favicon.png') }}" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='image/home/favicon.png') }}" />
 
-{% block extCSS %}
 
-{% endblock %}
 <script src="{{ url_for('static', filename='js/jquery-3.1.1.min.js') }}"></script>
-    <!-- <link rel="stylesheet" type="text/css" href="../static/css/semantic.min.css"> -->
-<!-- <script src="../static/js/semantic.min.js"></script> -->
 {% block extJS %}
 
 {% endblock %}
@@ -40,8 +39,8 @@
 {%if vars.namex%}
 <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
   <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
-    <a class="navbar-brand brand-logo" href="/home"><img src="{{ url_for('static', filename='image/logo.png') }}" alt="logo" /></a>
-    <a class="navbar-brand brand-logo-mini" href="index.html"><img src="{{ url_for('static', filename='image/logo-mini.png') }}" alt="logo" /></a>
+    <a class="navbar-brand brand-logo" href="/home"><img src="{{ url_for('static', filename='image/home/logo.png') }}" alt="logo" /></a>
+    <a class="navbar-brand brand-logo-mini" href="index.html"><img src="{{ url_for('static', filename='image/home/logo-mini.png') }}" alt="logo" /></a>
   </div>
   <div class="navbar-menu-wrapper d-flex align-items-stretch">
     <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
@@ -253,6 +252,8 @@
     <script src="{{ url_for('static', filename='js/todolist.js') }}"></script>
     <!-- endinject -->
 
+<script src="{{ url_for('static', filename='js/select2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/typeahead.bundle.min.js') }}"></script>
 
 {% block end_extJS %}
 

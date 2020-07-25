@@ -25,7 +25,7 @@ DVK Polymers
 
 
                       <div class="form-group">
-                          <div class="input-group input-daterange d-flex align-items-center">
+                          <div class="input-group input-daterange datepicker-autoclose d-flex align-items-center">
                               <label for="fromDate"></label>
                               <div class="input-group-addon mx-4">From</div>
                               <input type="text" class="form-control" name="fromDate" id='searchFrom' placeholder="From Date" required>
@@ -238,11 +238,11 @@ function sortByDate() {
 
 }
 function convertDate(d) {
-  var p = d.split("-");
+  var p = d.split("/");
   return +(p[2]+p[1]+p[0]);
 }
 function convertDateNew(d) {
-  var p = d.split(" ")[0].split("-");
+  var p = d.split(" ")[0].split("/");
   return +(p[0]+p[1]+p[2]);
 }
 </script>

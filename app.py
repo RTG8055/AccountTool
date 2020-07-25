@@ -17,6 +17,7 @@ itemsTable = 'items'
 debtorsTable = 'debtors'
 creditorsTable = 'creditors'
 usersTable = 'app_users'
+access_groups = []
 
 
 @app.route('/')
@@ -75,6 +76,17 @@ def enterDispatch():
         return json.dumps({'errory': str(e)})
     else:
         return redirect('/dispatch')
+
+
+@app.route('/viewBills')
+def viewBills():
+    if (session.get('user_id') and session.get('access_group') == 'all_access'):
+        try:
+            return showWebPage('viewBills.html', {})
+        except Exception as e:
+            return json.dumps({'errory': str(e)})
+    else:
+        return showWebPage('404.html', {'error': "no access"})
 
 
 @app.route('/viewpartybills')
@@ -416,12 +428,47 @@ def enterReceive():
         return json.dumps({'errory': str(e)})
 
 
+@app.route('/editbill/<billno>/<partyType>', methods=['POST'])
+def editBillDB(billno,partyType):
+    if(session.get('user_id')):
+        if (session.get('access_group') == 'all_access'):
+            try:
+                _creditor_id = request.form.get('creditor')
+                _item_all = getAllElements('item')
+                _quantity_all = getAllElements('quantity')
+                _rate_all = getAllElements('rate')
+                _amount_all = getAllElements('amount')
+                _bill_date = request.form.get('billDate')
+
+                totalAmount = request.form.get('totalAmount')
+                narration = ''
+                if (request.form.get('narration')):
+                    narration = request.form.get('narration')
+
+                bill_no = getNewID('bill_no')
+                columns = 'bill_no, party_id, narration, total_amt, type, bill_date'
+                values = "'{}', '{}', '{}', '{}', '{}', '{}'".format(bill_no, _creditor_id, narration, totalAmount,
+                                                                     "purchase", _bill_date)
+
+                insertData('invoice', columns, values)
+                insertInvoiceDetails(bill_no, _item_all, _quantity_all, _rate_all, _amount_all, 'purchase', _bill_date)
+                updateBalance("creditor", _creditor_id, totalAmount, "add")
+                return redirect('/purchase')
+
+            except Exception as e:
+                return json.dumps({'errory': str(e)})
+        else:
+            return showWebPage('404.html', {'error': "no access"})
+    else:
+        return redirect('/')
+
 @app.route('/editbill/<billno>/<partyType>')
 def editBill(billno, partyType):
     if (session.get('user_id')):
         print("inside editBIll:", billno)
 
-        invoiceData = getData('INVOICE', "party_id, narration, total_amt, bill_date, type", "bill_no ='{}'".format(billno))[0]
+        invoiceData = \
+            getData('INVOICE', "party_id, narration, total_amt, bill_date, type", "bill_no ='{}'".format(billno))[0]
         print(invoiceData)
         selectedPartyId = invoiceData[0]
         selectedBillDate = invoiceData[3].split(' ')[0]
@@ -434,26 +481,31 @@ def editBill(billno, partyType):
 
         # getData('invoice','')
 
-        itemData = getData(itemsTable, 'name, item_id', extra='order by name');
+        itemData = getData(itemsTable, 'name, item_id', extra='order by name')
         itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,
-                                      "class ='itemDropDown' style='width:120px;'");
+                                      "class ='itemDropDown' style='width:120px;'")
+        totalAmt = 0
+        for i in invoiceDetailsData:
+            totalAmt += i[3]
 
         if (partyType == 'debtor'):
-            debtorsData = getData(debtorsTable, 'name, debtor_id');
-            selectedPartyName = getData(debtorsTable, 'name', "debtor_id='{}'".format(selectedPartyId))[0][0];
+            debtorsData = getData(debtorsTable, 'name, debtor_id')
+            selectedPartyName = getData(debtorsTable, 'name', "debtor_id='{}'".format(selectedPartyId))[0][0]
             debtorsDropDown = createDropDown(debtorsData, "debtor' id='debtorDropDown", 'Select Party Name', 1, 0,
-                                             selected=selectedPartyName);
-            parties = debtorsDropDown;
+                                             selected=selectedPartyName)
+            parties = debtorsDropDown
         else:
-            creditorsData = getData(creditorsTable, 'name, creditor_id');
+            creditorsData = getData(creditorsTable, 'name, creditor_id')
             selectedPartyName = getData(creditorsTable, 'name', "creditor_id='{}'".format(selectedPartyId))[0][0];
             creditorsDropDown = createDropDown(creditorsData, "creditor' id='creditorDropDown", 'Select Party Name', 1,
-                                               0, selected=selectedPartyName);
-            parties = creditorsDropDown;
+                                               0, selected=selectedPartyName)
+            parties = creditorsDropDown
         partyType += 's'
+
+        billItemData = createEditInventoryBillTable(invoiceDetailsData, itemData)
         return showWebPage('editBill.html',
                            {'billDate': selectedBillDate, 'partyName': selectedPartyName, 'items': itemDropDown,
-                            'partyList': parties})
+                            'partyList': parties, 'billItemData': billItemData, 'totalAmt': totalAmt})
     else:
         return redirect('/')
 
@@ -629,33 +681,41 @@ def createBillDetailsRow(data, columns, indexes):
 
     return trow
 
-
-def createEditInventoryBillTable(data, column, indexes, type_index, partyType):
-    '''
-    <tr id='item1'>
-                                <td id='sno1'>1.</td>
-                              <td id='itemId1'>{{ vars.get('items')|safe }}
-                                <p class="card-description" id="currQty1"></p>
-                              </td>
-                              <td id='itemQty1'>
-                                <input name='quantity1' type="number" id="quantity1" placeholder="Quantity in kGs" class='qty' title="Kgs" step="0.01" required>
-                              </td>
-                              <td id='itemQtyBag1'>
-                                <input type="number" id="quantityBag1" placeholder="Quantity in Bags" class='qtyBag' title="Bags" step="0.01">
-                              </td>
-                              <td id='itemRate1'>
-                                <input name='rate1' type="number" id="Rate1" placeholder="Rate per kG" class='rate' title="Enter Rate" step="0.01" required>
-                              </td>
-                              <td id='itemAmt1'>
-                                <input name='amount1' type="number" id="Amount" placeholder="Amount" title="Amount" step="0.01" class="Amount" readonly>
-                              </td>
-                              <td id='addItem'><i class="mdi mdi-backspace icon-md" style='float:left;' onclick="removeItem('1')"></i>
-                                <button id='addButton' class="btn btn-block btn-lg btn-gradient-primary mt-4" onclick="addItem('2');">+ Add an Item</button>
-                              </td>
-                            </tr>
-    '''
-    pass
-    return
+def createEditInventoryBillTable(data, itemData):
+    itemRows = ""
+    itemNo = 0
+    for item in data:
+        itemNo += 1
+        itemDropDown = createDropDown(itemData, "item{}".format(itemNo), 'Select Item', 1, 0,
+                                      "class ='itemDropDown' style='width:120px;'", selected=item[0])
+        row = ""
+        row += "<tr id='item{}'>".format(itemNo)
+        row += "<td id='sno{}'>{}.</td>".format(itemNo, itemNo)
+        row += "<td id='itemId{}'>{}<p class='card-description' id='currQty{}'></p></td>".format(itemNo, itemDropDown, itemNo)
+        row += "<td id='itemQty{}'>".format(itemNo, itemNo)
+        row += "<input name='quantity{}' type='number' id='quantity{}' placeholder='Quantity in kGs' class='qty' " \
+               "title='Kgs' step='0.01' value='{}' required>".format(itemNo, itemNo, item[1])
+        row += "</td>"
+        row += "<td id='itemQtyBag{}'>".format(itemNo)
+        row += "<input type='number' id='quantityBag{}' placeholder='Quantity in Bags' class='qtyBag' title='Bags' " \
+               "step='0.01' value='{}'>".format(itemNo, item[1]/40.0)
+        row += "</td>"
+        row += "<td id='itemRate{}'>".format(itemNo)
+        row += "<input name='rate{}' type='number' id='Rate{}' placeholder='Rate per kG' class='rate' title='Enter " \
+               "Rate' step='0.01' value='{}' required>".format(itemNo, itemNo, item[2])
+        row += "</td>"
+        row += "<td id='itemAmt{}'>".format(itemNo)
+        row += "<input name='amount{}' type='number' id='Amount' placeholder='Amount' title='Amount' step='0.01' " \
+               "class='Amount' value='{}' readonly>".format(itemNo, item[3])
+        row += "</td>"
+        row += "<td id='addItem'><i class='mdi mdi-backspace icon-md' style='float:left;' onclick='removeItem('{" \
+               "}')'></i>".format(itemNo)
+        row += "<button id='addButton' class='btn btn-block btn-lg btn-gradient-primary mt-4' onclick='addItem('{" \
+               "}');'>+ Add an Item</button>".format(itemNo + 1)
+        row += "</td>"
+        row += "</tr>"
+        itemRows += row
+    return itemRows
 
 
 def createBillsTable(data, columns, indexes, type_index, partyType):
@@ -721,9 +781,9 @@ def checkPartyItemExists(_party_name, _type):
         return True
 
 
-def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex, className="class='form-control'",
+def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex, className="class='form-control js-example-basic-single select2-hidden-accessible' style='width:100%' data-select2-id='1' tabindex='-1' aria-hidden='true'>",
                    selected='default'):
-    dropDown = "<select name='" + dropDownName + "'" + className + " required> "
+    dropDown = "<select name='" + dropDownName + "' " + className + " required> "
     if (selected == 'default'):
         dropDown += "<option selected='selected' disabled='disabled'>" + defaultOption + "</option>"
         for row in data:
@@ -737,6 +797,7 @@ def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex, cla
             else:
                 dropDown += "<option value='" + str(row[valueIndex]) + "'> " + str(row[nameIndex]) + "</option>"
         dropDown += "</select>"
+    print(dropDown)
     return dropDown
 
 
