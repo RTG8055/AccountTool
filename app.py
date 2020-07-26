@@ -2,6 +2,8 @@ import locale
 import os
 import sqlite3
 from datetime import date
+import pandas as pd
+import matplotlib.pyplot as plt
 
 from flask import Flask, render_template, redirect, json, request, session, jsonify
 
@@ -89,6 +91,15 @@ def viewPartyBills():
     else:
         return showWebPage('404.html', {'error': "no access"})
 
+@app.route('/viewpartybills',methods=['GET','POST'])
+def viewPartyBillsReq():
+    if (session.get('user_id') and session.get('access_group') == 'all_access'):
+        try:
+            return showWebPage('viewParties.html', {})
+        except Exception as e:
+            return json.dumps({'errory': str(e)})
+    else:
+        return showWebPage('404.html', {'error': "no access"})
 
 @app.route('/additem')
 def additem():
@@ -184,7 +195,7 @@ def payment():
                                                0)
             billDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get(
                 'billDate')
-            return showWebPage('payment.html', {'creditors': creditorsDropDown,'billDate': billDate})
+            return showWebPage('payment.html', {'creditors': creditorsDropDown, 'billDate': billDate})
         except Exception as e:
             return json.dumps({'errory': str(e)})
     else:
@@ -272,6 +283,7 @@ def enterReceipt():
     else:
         redirect('/')
 
+
 @app.route('/sales')
 def sales():
     if (session.get('user_id') and session.get('access_group') == 'all_access'):
@@ -338,7 +350,8 @@ def purchase():
             creditorsDropDown = createDropDown(creditorsData, "creditor' id='creditorDropDown", 'Select Party Name', 1,
                                                0)
             billDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('billDate')
-            return showWebPage('purchase.html', {'items': itemDropDown, 'creditors': creditorsDropDown,  'billDate': billDate})
+            return showWebPage('purchase.html',
+                               {'items': itemDropDown, 'creditors': creditorsDropDown, 'billDate': billDate})
         except Exception as e:
             return json.dumps({'errory': str(e)})
     else:
@@ -393,7 +406,8 @@ def receive():
 
             billDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get(
                 'billDate')
-            return showWebPage('receive.html', {'items': itemDropDown, 'creditors': creditorsDropDown, 'billDate': billDate})
+            return showWebPage('receive.html',
+                               {'items': itemDropDown, 'creditors': creditorsDropDown, 'billDate': billDate})
         except Exception as e:
             return json.dumps({'errory': str(e)})
     else:
@@ -434,7 +448,7 @@ def editBill(billno, partyType):
         print("inside editBIll:", billno)
 
         invoiceData = \
-        getData('INVOICE', "party_id, narration, total_amt, bill_date, type", "bill_no ='{}'".format(billno))[0]
+            getData('INVOICE', "party_id, narration, total_amt, bill_date, type", "bill_no ='{}'".format(billno))[0]
         print(invoiceData)
         selectedPartyId = invoiceData[0]
         selectedBillDate = invoiceData[3].split(' ')[0]
@@ -494,7 +508,7 @@ def validateLogin():
         # captcha_response = request.form.get('g-recaptcha-response')
         print(_email + " " + _password)
         # validate the received values
-    # conn = sqlite3.connect(os.path.realpath(databaseName))
+        # conn = sqlite3.connect(os.path.realpath(databaseName))
         if _email and _password:
 
             # All Good, let's call MySQL
@@ -585,6 +599,42 @@ def getBillDetails():
     })
 
 
+@app.route("/get/party/billsPDF")
+def getPartyDetailsPDF():
+    _id = request.args.get('id', 0)
+    _type = request.args.get('type', 0)
+    _from = request.args.get('from', 0)
+    _to = request.args.get('to', 0)
+    FILTER = ''
+    if (_from != "9999"):
+        FILTER += "and bill_date > '{}'".format(_from)
+    if (_to != "9999"):
+        FILTER += "and bill_date < '{}'".format(_to)
+        # (bill_no text, party_id text, narration text, total_amt real, type text,bill_date text)''')
+
+    print("to and from : ", _to, _from)
+    data = getData('INVOICE', "bill_no, narration, total_amt, bill_date, type", "party_id ='{}' {}".format(_id, FILTER),
+                   " order by bill_date")
+    print(data)
+    # fig, ax = plt.subplots()
+    # fig.patch.set_visible(False)
+    # ax.axis('off')
+    # ax.axis('tight')
+    # df = pd.DataFrame(data, columns=['bill_no', 'narration', 'total_amt', 'bill_date', 'type'])
+    # ax.table(cellText=df.values, colLabels=df.columns, loc='center')
+    # fig.tight_layout()
+    #
+    # plt.show()
+    #
+    # plt.savefig("tablepdf.pdf", bbox_inches='tight')
+
+    tbody = createBillsTablePDF(data, ['bill_no', 'narration', 'total_amt', 'bill_date', 'type'], [0, 3, 2], 4, _type)
+    print(tbody)
+    return jsonify({
+        "tbody": tbody,
+    })
+
+
 @app.route("/get/party/bills")
 def getPartyDetails():
     _id = request.args.get('id', 0)
@@ -672,6 +722,56 @@ def createEditInventoryBillTable(data, column, indexes, type_index, partyType):
     return
 
 
+def createBillsTablePDF(data, columns, indexes, type_index, partyType):
+    tbody = '<table><thead><tr><th></th><th>Bill No.</th><th>Bill Date</th><th>Debited Amount</th><th>Credited ' \
+            'Amount</th></thead><tbody> '
+    i = 1
+    debt_sum = 0.0
+    cred_sum = 0.0
+    for row in data:
+        bill_id = row[indexes[0]]
+        bill_no = 'bill' + str(i)
+        # tbody += "<tbody class='bill-row'>"
+        tbody += "<tr id='" + bill_no + "' class='bill'> "
+        # tbody += '<td><a onclick="getBilldata(\'{}\')"><i class="mdi mdi-arrow-down">expand</a></td>'.format(bill_id)
+        for index in indexes:
+            if (columns[index] == 'total_amt' and (row[type_index] == 'receipt' or row[type_index] == 'purchase')):
+                cred_sum += float(row[index])
+                tbody += "<td></td>"
+                tbody += "<td>" + locale.currency(float(row[index]), grouping=True, symbol=False) + "</td>"
+            elif (columns[index] == 'total_amt'):
+                debt_sum += float(row[index])
+                tbody += "<td>" + locale.currency(float(row[index]), grouping=True, symbol=False) + "</td>"
+                tbody += "<td></td>"
+            else:
+                tbody += "<td>" + str(row[index]) + "</td>"
+        # tbody += "<td><a href='/editbill/{}/{}'><i class='mdi mdi-border-color'>Edit</td></a>".format(row[0], partyType)
+
+        # tbody += "</tr>\
+        #     <tr style='display: none;' class='{}-toggle billDetailHead'>\
+        #     <th></th>\
+        #     <th>Item</th>\
+        #     <th>Quantity</th>\
+        #     <th>Rate</th>\
+        #     <th>Total</th>\
+        #     </tr><tr style='display: none;' class='{}-toggle billDetail' id='{}-details'></tr>".format(bill_id, bill_id,
+        #                                                                                                bill_id)
+        # tbody += "</tbody>"
+        i += 1
+    tbody += "<tr id='totals' style='font-weight: bold;' class='billEnd'><td>Total</td><td></td><td></td><td>" + locale.currency(
+        float(debt_sum), grouping=True, symbol=False) + "</td><td>" + locale.currency(float(cred_sum), grouping=True,
+                                                                                      symbol=False) + "</td></tr>"
+    bal = debt_sum - cred_sum
+    if (bal >= 0):
+        tbody += "<tr id='balance' class='billEnd' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td>{}</td><td></td>".format(
+            locale.currency(float(bal), grouping=True, symbol=False))
+    else:
+        tbody += "<tr id='balance' class='billEnd' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td></td><td>{}</td>".format(
+            locale.currency(float(-bal), grouping=True, symbol=False))
+    tbody += '</tbody>'
+    return tbody
+
+
 def createBillsTable(data, columns, indexes, type_index, partyType):
     tbody = ''
     i = 1
@@ -707,15 +807,15 @@ def createBillsTable(data, columns, indexes, type_index, partyType):
                                                                                                    bill_id)
         # tbody += "</tbody>"
         i += 1
-    tbody += "<tr id='totals' style='font-weight: bold;' class='billEnd'><td>Total</td><td></td><td></td><td>" + locale.currency(
+    tbody += "<tr id='totals' style='font-weight: bold;' class='billEnd'><td></td><td>Total</td><td></td><td>" + locale.currency(
         float(debt_sum), grouping=True, symbol=False) + "</td><td>" + locale.currency(float(cred_sum), grouping=True,
                                                                                       symbol=False) + "</td></tr>"
     bal = debt_sum - cred_sum
     if (bal >= 0):
-        tbody += "<tr id='balance' class='billEnd' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td>{}</td><td></td>".format(
+        tbody += "<tr id='balance' class='billEnd' style='font-weight: bold;'> <td></td><td>Balance</td><td></td><td>{}</td><td></td>".format(
             locale.currency(float(bal), grouping=True, symbol=False))
     else:
-        tbody += "<tr id='balance' class='billEnd' style='font-weight: bold;'> <td>Balance</td><td></td><td></td><td></td><td>{}</td>".format(
+        tbody += "<tr id='balance' class='billEnd' style='font-weight: bold;'> <td></td><td>Balance</td><td></td><td></td><td>{}</td>".format(
             locale.currency(float(-bal), grouping=True, symbol=False))
     return tbody
 

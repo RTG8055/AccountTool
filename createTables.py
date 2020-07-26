@@ -13,12 +13,12 @@ def getNewID(id_name):
 
     data = cursor.execute("select last_val from current_id where id_name='{}'".format(id_name))
     data = cursor.fetchone()[0]
-    print data
+    print(data)
     if(id_name!='user_id'):
         new_id = data[:2] + "{:04d}".format(int(data[2:])+1)
     else:
         new_id = data[:1] + "{:04d}".format(int(data[1:])+1)
-    print new_id
+    print(new_id)
 
     cursor.execute("UPDATE current_id set last_val='{}' where id_name='{}'".format(new_id, id_name))
     conn.commit()
@@ -82,16 +82,16 @@ c.execute("INSERT INTO items(item_id, name, code, description) VALUES ('IT0001',
 conn.commit()
 
 data = c.execute("select * from debtors")
-print data
-print c.fetchall()
+print(data)
+print(c.fetchall())
 
 items = ['MRPL OG', 'MRPL FILM', 'MRPL 12T', 'MRPL HR003', 'MRPL 35YR', 'MRPL 12CT', 'OPAL MH13', 'OPAL FILM', 'OPAL R03', 'MITAL M12RR', 'MITAL R03RR', 'MITAL FILM', 'MITAL TF', 'MITAL OG', 'EX METLOCIN', 'EXON 3155', 'TOTAL PP', 'RIL 050', 'RIL 110', 'RIL 350FG', 'RIL 100EY', 'RIL CP080', 'RIL 100NC', 'RIL 1070LA', 'RIL F190', 'HALDIA 5400', 'HALDIA 110', 'HALDIA T103', 'HALDIA FILM']
 
 item_id=''
 for i in items:
 	item_id = getNewID('item_id')
-	print repr("INSERT INTO items(item_id, name, curr_qty) VALUES ('{}', '{}',  0)".format(item_id, i))
-	print repr(i.split(' ')[0])
+	print(repr("INSERT INTO items(item_id, name, curr_qty) VALUES ('{}', '{}',  0)".format(item_id, i)))
+	print(repr(i.split(' ')[0]))
 	# c.execute('INSERT INTO items(item_id, name, code, description) VALUES ("'+ item_id + '", "' + i + '", ')
 	c.execute("INSERT INTO items(item_id, name, curr_qty) VALUES ('{}', '{}', 0)".format(item_id, i))
 
@@ -126,8 +126,8 @@ conn.commit()
 # Just be sure any changes have been committed or they will be lost.
 
 data = c.execute("select * from received")
-print data
-print c.fetchall()
+print(data)
+print(c.fetchall())
 conn.close()
 
 

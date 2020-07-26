@@ -4,11 +4,26 @@
 DVK Polymers
 {% endblock %}
 
+{% block extCSS %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.toast.min.css') }}">
+{% endblock %}
+
 
 {% block body %}
 
 <div class="main-panel">
 	<div class="content-wrapper">
+        {%if vars.success%}
+
+        {%endif%}
+        <div class="row" id="proBanner" style="display: {{ vars.get('display')| safe }};">
+              <div class="col-12">
+                <span class="d-flex align-items-center purchase-popup">
+                  <p>{{ vars.get('error'| safe) }}</p>
+                  <i class="mdi mdi-close" id="bannerClose"></i>
+                </span>
+              </div>
+            </div>
 		<div class="row">
 	    		<div class="col-md-6 grid-margin stretch-card">
 	        	<div class="card">
@@ -54,6 +69,7 @@ DVK Polymers
   	</footer>
  <!-- partial -->
 </div>
+</div>
 
 {% endblock %}
 
@@ -74,4 +90,6 @@ DVK Polymers
     <script src="{{ url_for('static', filename='js/form-addons.js') }}"></script>
     <script src="{{ url_for('static', filename='js/form-repeater.js') }}"></script>
     <script src="{{ url_for('static', filename='js/inputmask.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.toast.min.js') }} "></script>
+    <script src="{{ url_for('static', filename='js/toastDemo.js') }}"></script>
 {% endblock %}

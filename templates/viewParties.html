@@ -9,7 +9,8 @@ DVK Polymers
 {% endblock %}
 
 {% block extJS %}
-
+    <script src="{{ url_for('static', filename='js/jspdf.debug.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jspdf.plugin.autotable.js') }}"></script>
 {% endblock %}
 
 {% block body %}
@@ -49,9 +50,13 @@ DVK Polymers
                       		<div id="partyDropDown">	
                       		</div>
                       	</div>
+                        <div class="form-group" >
+                            <button onclick="showTable()">Search</button>
+{#                            ToDo#}
+                            </div>
 
-
-	                	<table class="table table-bordered table-hover items">
+                        <button onclick="generatePDF()" target="_blank">Print PDF <i class="mdi mdi-file-pdf"></i></button>
+	                	<table class="table table-bordered table-hover items" id="AllBills">
 	                      <thead>
 	                        <tr class='billHead'>
 	                        	<th></th>
@@ -130,6 +135,53 @@ DVK Polymers
 </script>
 <script type="text/javascript">
 
+    function generatePDF() {
+        var doc = new jsPDF();
+
+        var res = doc.autoTableHtmlToJson(document.getElementById("AllBills"));
+        var columns = [res.columns[1], res.columns[2], res.columns[3], res.columns[4]];
+        var tableData =[];
+        for(let i=0; i <res.rows.length;i++){
+            tableData.push(res.rows[i].slice(1,5));
+        }
+        doc.autoTable(columns, tableData, {startY: 60});
+
+        // Simple html example
+        {#doc.autoTable({ html: '#billsTable' })#}
+
+        doc.save('table.pdf')
+      }
+
+{#    $(document).on('click', '#generatePDF', function(){#}
+{##}
+{#        var from = $("#searchFrom").val();#}
+{#        var to = $("#searchTo").val();#}
+        {##}
+{#        if(!from)#}
+{#          from="9999";#}
+{#        if(!to)#}
+{#          to="9999";#}
+        {#var partyType = $('#typeDropDown').val();#}
+        {#var partyID = $('#'+partyType+'DropDown').val();#}
+		{#$.ajax({#}
+        {#    url : '/get/party/billsPDF?id=' + partyID + '&type='+partyType+'&from=' + String(from) + '&to='+String(to),#}
+        {#    success: function(data) {#}
+{#        var tablePDF;#}
+{#         if (localStorage && 'theValue' in localStorage) {#}
+{#             tablePDF = localStorage.theValue;#}
+{#         }#}
+{#                var doc = new jsPDF();#}
+{#                doc.autoTable({ html: tablePDF});#}
+{#                console.log(tablePDF);#}
+{#                doc.save('statement '+String(from)+'To '+String(to)+'.pdf');#}
+                {#$('#billsTable').html(data['tbody']);#}
+                {#sortByDate();#}
+{#                console.log(doc);#}
+                {#sleep(10);#}
+        {#    }#}
+{#        });#}
+{#	});#}
+
 	$("a[id^=bill]").click(function(event) {
     $("#bill" + $(this).attr('id').substr(5)).slideToggle("slow");
     event.preventDefault();
@@ -170,6 +222,8 @@ DVK Polymers
             success: function(data) {
                 $('#billsTable').html(data['tbody']);
                 sortByDate();
+                // Writing the value
+                localStorage && (localStorage.billsTable = $('#AllBills'));
             }
         });
 	});
@@ -250,7 +304,7 @@ function convertDateNew(d) {
 
 <style type="text/css">
 	.bill{
-		
+		{#ToDo#}
 	}
 
 .billHead {
