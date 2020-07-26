@@ -7,7 +7,7 @@ gunicorn==19.5.0
 idna==2.9
 itsdangerous==1.1.0
 Jinja2==2.11.1
-kiwisolver==1.2.0
+kiwisolver==1.1.0
 MarkupSafe==1.1.1
 matplotlib==3.3.0
 numpy==1.19.1
