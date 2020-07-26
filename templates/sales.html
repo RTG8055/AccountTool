@@ -25,7 +25,7 @@ DVK Polymers
 	                	   <div class="form-group">
 								<label for="billDate">Bill Date</label>
                                <div id="datepicker-popup" class="input-group date datepicker">
-                          <input type="text" class="form-control" name="billDate" id='date' placeholder="Bill Date" required>
+                          <input type="text" class="form-control" name="billDate" id='date' placeholder="Bill Date" value="{{ vars.get('billDate')|safe }}" required>
                           <span class="input-group-addon input-group-append border-left">
                             <span class="mdi mdi-calendar input-group-text"></span>
                           </span>
