@@ -2,8 +2,6 @@ import locale
 import os
 import sqlite3
 from datetime import date
-import pandas as pd
-import matplotlib.pyplot as plt
 
 from flask import Flask, render_template, redirect, json, request, session, jsonify
 
