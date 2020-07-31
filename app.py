@@ -2,10 +2,11 @@ import locale
 import os
 import sqlite3
 from datetime import date
+import datetime
 
 from flask import Flask, render_template, redirect, json, request, session, jsonify
 
-from DBUtils import *
+from DBUtilsAWS import *
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -19,6 +20,15 @@ debtorsTable = 'debtors'
 creditorsTable = 'creditors'
 usersTable = 'app_users'
 access_groups = []
+
+insert_dispatch = 'insert_dispatch'
+insert_receive = 'insert_receive'
+insert_debtor = 'insert_debtor'
+insert_creditor = 'insert_creditor'
+insert_invoice = 'insert_invoice'
+insert_invoice_details = 'insert_invoice_details'
+insert_item = 'insert_item'
+insert_user = 'insert_user'
 
 
 @app.route('/')
@@ -41,13 +51,14 @@ def dispatch():
     if session.get('user_id') and session.get('access_group') == 'all_access':
         try:
             itemData = getData(itemsTable, 'name, item_id', extra='order by name')
-            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0,
-                                          "class ='itemDropDown' style='width:120px;'")
+            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0)
 
             debtorsData = getData(debtorsTable, 'name, debtor_id')
             debtorsDropDown = createDropDown(debtorsData, 'debtor', 'Select Party Name', 1, 0)
 
-            return showWebPage('dispatch.html', {'items': itemDropDown, 'debtors': debtorsDropDown})
+            billDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('billDate')
+            return showWebPage('dispatch.html',
+                               {'items': itemDropDown, 'debtors': debtorsDropDown, 'billDate': billDate})
         except Exception as e:
             return json.dumps({'errory': str(e)})
     else:
@@ -62,21 +73,58 @@ def enterDispatch():
         _quantity = request.form.get('quantity')
         _dispatch_date = request.form.get('dispatch_date')
 
-        dispatch_id = getNewID('dispatch_id')
         if (request.form.get('vehicle_no')):
             _vehicle_no = request.form.get('vehicle_no')
-            columns = 'dispatch_id, item_id, qty,dispatch_date, debtor_id, vehicle_no'
-            values = "'{}', '{}', '{}', '{}', '{}'".format(dispatch_id, _item_id, _quantity, str(_dispatch_date),
-                                                           _debtor_id, _vehicle_no)
         else:
-            columns = 'dispatch_id, item_id, qty,dispatch_date, debtor_id'
-            values = "'{}', '{}', '{}', '{}', '{}'".format(dispatch_id, _item_id, _quantity, str(_dispatch_date),
-                                                           _debtor_id)
-        insertData('dispatch', columns, values)
+            _vehicle_no = ''
+
+        values = [_item_id, _quantity, str(_dispatch_date),_debtor_id, _vehicle_no]
+        call_procedure(insert_dispatch, values)
     except Exception as e:
         return json.dumps({'errory': str(e)})
     else:
         return redirect('/dispatch')
+
+
+@app.route('/receive')
+def receive():
+    if (session.get('user_id') and session.get('access_group') == 'all_access'):
+        try:
+            itemData = getData(itemsTable, 'name, item_id', extra='order by name')
+            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0)
+
+            creditorsData = getData(creditorsTable, 'name, creditor_id')
+            creditorsDropDown = createDropDown(creditorsData, 'creditor', 'Select Party Name', 1, 0)
+
+            billDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('billDate')
+            return showWebPage('receive.html',
+                               {'items': itemDropDown, 'creditors': creditorsDropDown, 'billDate': billDate})
+        except Exception as e:
+            return json.dumps({'errory': str(e)})
+    else:
+        return showWebPage('404.html', {'error': "no access"})
+
+
+@app.route('/receive', methods=['POST'])
+def enterReceive():
+    try:
+        _item_id = request.form.get('item')
+        _creditor_id = request.form.get('creditor')
+        _quantity = request.form.get('quantity')
+        _receipt_date = request.form.get('receipt_date')
+
+        if (request.form.get('vehicle_no')):
+            _vehicle_no = request.form.get('vehicle_no')
+        else:
+            _vehicle_no = ''
+
+        values = [_item_id, _quantity, str(_receipt_date),_creditor_id, _vehicle_no]
+        call_procedure(insert_receive, values)
+        session['billDate'] = _receipt_date
+        return redirect('/receive')
+
+    except Exception as e:
+        return json.dumps({'errory': str(e)})
 
 
 @app.route('/viewpartybills')
@@ -89,15 +137,18 @@ def viewPartyBills():
     else:
         return showWebPage('404.html', {'error': "no access"})
 
-@app.route('/viewpartybills',methods=['GET','POST'])
-def viewPartyBillsReq():
-    if (session.get('user_id') and session.get('access_group') == 'all_access'):
-        try:
-            return showWebPage('viewParties.html', {})
-        except Exception as e:
-            return json.dumps({'errory': str(e)})
-    else:
-        return showWebPage('404.html', {'error': "no access"})
+
+#
+# @app.route('/viewpartybills', methods=['GET', 'POST'])
+# def viewPartyBillsReq():
+#     if (session.get('user_id') and session.get('access_group') == 'all_access'):
+#         try:
+#             return showWebPage('viewParties.html', {})
+#         except Exception as e:
+#             return json.dumps({'errory': str(e)})
+#     else:
+#         return showWebPage('404.html', {'error': "no access"})
+
 
 @app.route('/additem')
 def additem():
@@ -120,10 +171,8 @@ def addItemDB():
 
             if (not checkPartyItemExists(_item_name, 'item')):
                 address = ''
-                item_id = getNewID('item_id')
-                columns = "item_id, name,curr_qty"
-                values = "'{}','{}',{}".format(item_id, _item_name, _qty)
-                insertData(itemsTable, columns, values)
+                values = [_item_name, address, _qty]
+                call_procedure(insert_item, values)
                 return showWebPage('addItem.html', {'error': 'Item Added', 'display': 'true'})
 
             else:
@@ -157,20 +206,15 @@ def addPartyDB():
 
             if (not checkPartyItemExists(_party_name, _party_type)):
                 address = ''
+                insert_procedure = ''
                 if (request.form.get('address')):
                     address = request.form.get('address')
                 if (_party_type == 'debtor'):
-                    party_id = getNewID('debtor_id')
-                    table = debtorsTable
-                    _id = 'debtor_id'
+                    insert_procedure = insert_debtor
                 else:
-                    party_id = getNewID('creditor_id')
-                    table = creditorsTable
-                    _id = 'creditor_id'
-
-                columns = "{},name,address,balance".format(_id)
-                values = "'{}','{}','{}',{}".format(party_id, _party_name, address, _balance)
-                insertData(table, columns, values)
+                    insert_procedure = insert_creditor
+                values = [_party_name, address, _balance]
+                call_procedure(insert_procedure, values)
                 return showWebPage('addParty.html', {'error': 'Party added', 'display': 'true'})
 
             else:
@@ -208,23 +252,13 @@ def enterPayment():
                 _creditor_id = request.form.get('creditor')
                 _amount = request.form.get('amount')
                 _bill_date = request.form.get('billDate')
-
                 narration = ''
                 if (request.form.get('narration')):
                     narration = request.form.get('narration')
-
-                bill_no = getNewID('bill_no')
-                # c.execute('''CREATE TABLE INVOICE
-                # (bill_no text, party_id text, narration text, total_amt real, type text,bill_date text)''')
-                columns = 'bill_no, party_id, narration, total_amt, type, bill_date'
-                values = "'{}', '{}', '{}', '{}', '{}', '{}'".format(bill_no, _creditor_id, narration, _amount,
-                                                                     "payment", _bill_date)
-
-                insertData('invoice', columns, values)
-                updateBalance("creditor", _creditor_id, _amount, "sub")
+                values = [_creditor_id, narration, _amount, "payment",datetime.datetime.strptime(_bill_date,"%d/%m/%Y")]
+                call_procedure(insert_invoice, values)
                 session['billDate'] = _bill_date
                 return redirect('/payment')
-
             except Exception as e:
                 return json.dumps({'errory': str(e)})
         else:
@@ -237,11 +271,9 @@ def enterPayment():
 def receipt():
     if (session.get('user_id') and session.get('access_group') == 'all_access'):
         try:
-
             debtorsData = getData(debtorsTable, 'name, debtor_id')
             debtorsDropDown = createDropDown(debtorsData, "debtor' id='debtorDropDown", 'Select Party Name', 1, 0)
-            billDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get(
-                'billDate')
+            billDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('billDate')
             return showWebPage('receipt.html', {'debtors': debtorsDropDown, 'billDate': billDate})
         except Exception as e:
             return json.dumps({'errory': str(e)})
@@ -257,23 +289,13 @@ def enterReceipt():
                 _debtor_id = request.form.get('debtor')
                 _amount = request.form.get('amount')
                 _bill_date = request.form.get('billDate')
-
                 narration = ''
                 if (request.form.get('narration')):
                     narration = request.form.get('narration')
-
-                bill_no = getNewID('bill_no')
-                # c.execute('''CREATE TABLE INVOICE
-                # (bill_no text, party_id text, narration text, total_amt real, type text,bill_date text)''')
-                columns = 'bill_no, party_id, narration, total_amt, type, bill_date'
-                values = "'{}', '{}', '{}', '{}', '{}', '{}'".format(bill_no, _debtor_id, narration, _amount, "receipt",
-                                                                     _bill_date)
-
-                insertData('invoice', columns, values)
-                updateBalance("debtor", _debtor_id, _amount, "sub")
+                values = [_debtor_id, narration, _amount, "receipt",datetime.datetime.strptime(_bill_date,"%d/%m/%Y")]
+                call_procedure(insert_invoice, values)
                 session['billDate'] = _bill_date
                 return redirect('/receipt')
-
             except Exception as e:
                 return json.dumps({'errory': str(e)})
         else:
@@ -289,7 +311,7 @@ def sales():
             # print("date: ", billDate)
             itemData = getData(itemsTable, 'name, item_id', extra='order by name')
             itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,
-                                          "class ='itemDropDown' style='width:120px;'")
+                                          "class ='itemDropDown")
 
             debtorsData = getData(debtorsTable, 'name, debtor_id')
             debtorsDropDown = createDropDown(debtorsData, "debtor' id='debtorDropDown", 'Select Party Name', 1, 0)
@@ -318,14 +340,11 @@ def enterSales():
                 if (request.form.get('narration')):
                     narration = request.form.get('narration')
 
-                bill_no = getNewID('bill_no')
-                columns = 'bill_no, party_id, narration, total_amt, type, bill_date'
-                values = "'{}', '{}', '{}', '{}', '{}', '{}'".format(bill_no, _debtor_id, narration, totalAmount,
-                                                                     "sales", _bill_date)
+                invoiceValues = [_debtor_id, narration, totalAmount,"sales",datetime.datetime.strptime(_bill_date,"%d/%m/%Y")]
 
-                insertData('invoice', columns, values)
+                call_procedure(insert_invoice, invoiceValues)
+                bill_no = getData('invoice', 'max(bill_no)', "party_id='{}' and type='{}' and total_amt={} and bill_date='{}'".format(_debtor_id, "sales", totalAmount,datetime.datetime.strptime(_bill_date,"%d/%m/%Y")))
                 insertInvoiceDetails(bill_no, _item_all, _quantity_all, _rate_all, _amount_all, 'sales', _bill_date)
-                updateBalance("debtor", _debtor_id, totalAmount, "add")
                 session['billDate'] = _bill_date
                 return redirect('/sales')
             except Exception as e:
@@ -342,7 +361,7 @@ def purchase():
         try:
             itemData = getData(itemsTable, 'name, item_id', extra='order by name')
             itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,
-                                          "class ='itemDropDown' style='width:120px;'")
+                                          "class ='itemDropDown")
 
             creditorsData = getData(creditorsTable, 'name, creditor_id')
             creditorsDropDown = createDropDown(creditorsData, "creditor' id='creditorDropDown", 'Select Party Name', 1,
@@ -373,14 +392,11 @@ def enterPurchase():
                 if (request.form.get('narration')):
                     narration = request.form.get('narration')
 
-                bill_no = getNewID('bill_no')
-                columns = 'bill_no, party_id, narration, total_amt, type, bill_date'
-                values = "'{}', '{}', '{}', '{}', '{}', '{}'".format(bill_no, _creditor_id, narration, totalAmount,
-                                                                     "purchase", _bill_date)
+                invoiceValues = [_creditor_id, narration, totalAmount,"purchase", datetime.datetime.strptime(_bill_date,"%d/%m/%Y")]
 
-                insertData('invoice', columns, values)
+                call_procedure(insert_invoice, invoiceValues)
+                bill_no = getData('invoice', 'max(bill_no)', "party_id='{}' and type='{}' and total_amt={} and bill_date='{}'".format(_creditor_id, "purchase", totalAmount,datetime.datetime.strptime(_bill_date,"%d/%m/%Y")))
                 insertInvoiceDetails(bill_no, _item_all, _quantity_all, _rate_all, _amount_all, 'purchase', _bill_date)
-                updateBalance("creditor", _creditor_id, totalAmount, "add")
                 session['billDate'] = _bill_date
                 return redirect('/purchase')
 
@@ -392,76 +408,45 @@ def enterPurchase():
         redirect('/')
 
 
-@app.route('/receive')
-def receive():
-    if (session.get('user_id') and session.get('access_group') == 'all_access'):
-        try:
-            itemData = getData(itemsTable, 'name, item_id', extra='order by name')
-            itemDropDown = createDropDown(itemData, 'item', 'Select Item', 1, 0, )
-
-            creditorsData = getData(creditorsTable, 'name, creditor_id')
-            creditorsDropDown = createDropDown(creditorsData, 'creditor', 'Select Party Name', 1, 0)
-
-            billDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get(
-                'billDate')
-            return showWebPage('receive.html',
-                               {'items': itemDropDown, 'creditors': creditorsDropDown, 'billDate': billDate})
-        except Exception as e:
-            return json.dumps({'errory': str(e)})
-    else:
-        return showWebPage('404.html', {'error': "no access"})
-
-
-@app.route('/receive', methods=['POST'])
-def enterReceive():
-    try:
-        _item_id = request.form.get('item')
-        _creditor_id = request.form.get('creditor')
-        _quantity = request.form.get('quantity')
-        _receipt_date = request.form.get('receipt_date')
-
-        receipt_id = getNewID('receipt_id')
-        if (request.form.get('vehicle_no')):
-            _vehicle_no = request.form.get('vehicle_no')
-            columns = 'receipt_id, item_id, qty,receipt_date, creditor_id, vehicle_no'
-            values = "'{}', '{}', '{}', '{}', '{}'".format(receipt_id, _item_id, _quantity, str(_receipt_date),
-                                                           _creditor_id, _vehicle_no)
-        else:
-            columns = 'receipt_id, item_id, qty,receipt_date, creditor_id'
-            values = "'{}', '{}', '{}', '{}', '{}'".format(receipt_id, _item_id, _quantity, str(_receipt_date),
-                                                           _creditor_id)
-        insertData('received', columns, values)
-        session['billDate'] = _receipt_date
-        return redirect('/receive')
-
-    except Exception as e:
-        return json.dumps({'errory': str(e)})
-    else:
-        return redirect('/receive')
-
-
-@app.route('/editbill/<billno>/<partyType>')
-def editBill(billno, partyType):
+@app.route('/editbill/<billno>/<partyType>/<billType>')
+def editBill(billno, partyType, billType):
     if (session.get('user_id')):
         print("inside editBIll:", billno)
 
         invoiceData = \
-            getData('INVOICE', "party_id, narration, total_amt, bill_date, type", "bill_no ='{}'".format(billno))[0]
+            getData('invoice', "party_id, narration, total_amt, bill_date, type", "bill_no ='{}'".format(billno))[0]
         print(invoiceData)
-        selectedPartyId = invoiceData[0]
-        selectedBillDate = invoiceData[3].split(' ')[0]
-
-        invoiceDetailsData = getData('INVOICE_DETAILS natural join items', 'items.name, qty, rate, amount',
-                                     "bill_no='{}'".format(billno))
-        print(invoiceDetailsData)
-
-        # itemDetails = createBillDetailsRow(data,['item_id','qty','rate','amount'],[0,1,2,3])
-
-        # getData('invoice','')
 
         itemData = getData(itemsTable, 'name, item_id', extra='order by name')
         itemDropDown = createDropDown(itemData, 'item1', 'Select Item', 1, 0,
-                                      "class ='itemDropDown' style='width:120px;'")
+                                      "class ='itemDropDown")
+        selectedPartyId = invoiceData[0]
+        selectedBillDate = invoiceData[3].strftime("%d/%m/%Y")
+        if (billType == 'receipt' or billType == 'payment'):
+            if (partyType == 'debtor'):
+                debtorsData = getData(debtorsTable, 'name, debtor_id')
+                selectedPartyName = getData(debtorsTable, 'name', "debtor_id='{}'".format(selectedPartyId))[0][0]
+                debtorsDropDown = createDropDown(debtorsData, "debtor' id='debtorDropDown", 'Select Party Name', 1, 0,
+                                                 selected=selectedPartyName)
+                parties = debtorsDropDown
+            else:
+                creditorsData = getData(creditorsTable, 'name, creditor_id')
+                selectedPartyName = getData(creditorsTable, 'name', "creditor_id='{}'".format(selectedPartyId))[0][0]
+                creditorsDropDown = createDropDown(creditorsData, "creditor' id='creditorDropDown", 'Select Party Name',
+                                                   1,
+                                                   0, selected=selectedPartyName)
+                parties = creditorsDropDown
+            partyType += 's'
+            return showWebPage('editBillPayment.html',
+                               {'billDate': selectedBillDate, 'partyName': selectedPartyName, 'items': itemDropDown,
+                                'partyList': parties})
+        invoiceDetailsData = getData('invoice_details natural join items', 'items.name, qty, rate, amount',
+                                     "bill_no='{}'".format(billno))
+        print(invoiceDetailsData)
+
+        itemDetails = createBillDetailsRow(invoiceDetailsData, ['item_id', 'qty', 'rate', 'amount'], [0, 1, 2, 3])
+
+        # getData('invoice','')
 
         if (partyType == 'debtor'):
             debtorsData = getData(debtorsTable, 'name, debtor_id')
@@ -587,7 +572,7 @@ def getBillDetails():
     _id = request.args.get('id', 0)
     # (bill_no text, item_id text, qty real, rate real, amount real, foreign key(bill_no) REFERENCES invoice(bill_no))''')
 
-    data = getData('INVOICE_DETAILS natural join items', 'items.name, qty, rate, amount', "bill_no='{}'".format(_id))
+    data = getData('invoice_details natural join items', 'items.name, qty, rate, amount', "bill_no='{}'".format(_id))
     print(data)
 
     itemDetails = createBillDetailsRow(data, ['item_id', 'qty', 'rate', 'amount'], [0, 1, 2, 3])
@@ -605,13 +590,13 @@ def getPartyDetailsPDF():
     _to = request.args.get('to', 0)
     FILTER = ''
     if (_from != "9999"):
-        FILTER += "and bill_date > '{}'".format(_from)
+        FILTER += "and bill_date > '{}'".format(datetime.datetime.strptime(_from,"%d/%m/%Y"))
     if (_to != "9999"):
-        FILTER += "and bill_date < '{}'".format(_to)
+        FILTER += "and bill_date < '{}'".format(datetime.datetime.strptime(_to,"%d/%m/%Y"))
         # (bill_no text, party_id text, narration text, total_amt real, type text,bill_date text)''')
 
-    print("to and from : ", _to, _from)
-    data = getData('INVOICE', "bill_no, narration, total_amt, bill_date, type", "party_id ='{}' {}".format(_id, FILTER),
+    print("to and from : ", datetime.datetime.strptime(_to,"%d/%m/%Y"), datetime.datetime.strptime(_from,"%d/%m/%Y"))
+    data = getData('invoice', "bill_no, narration, total_amt, bill_date, type", "party_id ='{}' {}".format(_id, FILTER),
                    " order by bill_date")
     print(data)
     # fig, ax = plt.subplots()
@@ -641,13 +626,13 @@ def getPartyDetails():
     _to = request.args.get('to', 0)
     FILTER = ''
     if (_from != "9999"):
-        FILTER += "and bill_date > '{}'".format(_from)
+        FILTER += "and bill_date > '{}'".format(datetime.datetime.strptime(_from,"%d/%m/%Y"))
     if (_to != "9999"):
-        FILTER += "and bill_date < '{}'".format(_to)
+        FILTER += "and bill_date < '{}'".format(datetime.datetime.strptime(_to,"%d/%m/%Y"))
         # (bill_no text, party_id text, narration text, total_amt real, type text,bill_date text)''')
 
-    print("to and from : ", _to, _from)
-    data = getData('INVOICE', "bill_no, narration, total_amt, bill_date, type", "party_id ='{}' {}".format(_id, FILTER),
+    print("to and from : ", datetime.datetime.strptime(_to,"%d/%m/%Y"), datetime.datetime.strptime(_from,"%d/%m/%Y"))
+    data = getData('invoice', "bill_no, narration, total_amt, bill_date, type", "party_id ='{}' {}".format(_id, FILTER),
                    " order by bill_date")
     print(data)
 
@@ -792,7 +777,9 @@ def createBillsTable(data, columns, indexes, type_index, partyType):
                 tbody += "<td></td>"
             else:
                 tbody += "<td>" + str(row[index]) + "</td>"
-        tbody += "<td><a href='/editbill/{}/{}'><i class='mdi mdi-border-color'>Edit</td></a>".format(row[0], partyType)
+        tbody += "<td><a href='/editbill/{}/{}/{}'><i class='mdi mdi-border-color'>Edit</td></a>".format(row[0],
+                                                                                                         partyType, row[
+                                                                                                             type_index])
 
         tbody += "</tr>\
         <tr style='display: none;' class='{}-toggle billDetailHead'>\
@@ -833,13 +820,18 @@ def checkPartyItemExists(_party_name, _type):
         return True
 
 
-def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex, className="class='form-control'",
+def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex, className="class='form-control",
                    selected='default'):
-    dropDown = "<select name='" + dropDownName + "'" + className + " required> "
+    className += " js-example-basic-single'"
+    dropDown = "<select name='" + dropDownName + "'" + className + " style='width:100%' required> "
+
     if (selected == 'default'):
         dropDown += "<option selected='selected' disabled='disabled'>" + defaultOption + "</option>"
+        i = 0
         for row in data:
-            dropDown += "<option value='" + str(row[valueIndex]) + "'> " + str(row[nameIndex]) + "</option>"
+            i += 1
+            dropDown += "<option value='" + str(row[valueIndex]) + "' data-select2-id='" + str(
+                row[valueIndex]) + "'> " + str(row[nameIndex]) + "</option>"
         dropDown += "</select>"
     else:
         for row in data:
@@ -847,7 +839,8 @@ def createDropDown(data, dropDownName, defaultOption, valueIndex, nameIndex, cla
                 dropDown += "<option value='" + str(row[valueIndex]) + "' selected> " + str(
                     row[nameIndex]) + "</option>"
             else:
-                dropDown += "<option value='" + str(row[valueIndex]) + "'> " + str(row[nameIndex]) + "</option>"
+                dropDown += "<option value='" + str(row[valueIndex]) + "' data-select2-id='" + str(
+                    valueIndex) + "'> " + str(row[nameIndex]) + "</option>"
         dropDown += "</select>"
     return dropDown
 

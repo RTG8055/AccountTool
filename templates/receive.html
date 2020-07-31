@@ -5,8 +5,6 @@ DVK Polymers
 {% endblock %}
 
 {% block extCSS %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/select2.min.css') }}" >
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/select2-bootstrap.min.css') }}" >
 {% endblock %}
 
 {% block body %}
@@ -24,23 +22,9 @@ DVK Polymers
                                  <div class="form-group row" >
                                       <label class="col-sm-4 col-form-label">Select Item Name</label>
                                      <div class="col-sm-8">
-                                         <select class="form-control js-example-basic-single" style="width:100%">
-{#                                      <select class="js-example-basic-single select2-hidden-accessible" style="width:100%" data-select2-id="1" tabindex="-1" aria-hidden="true">#}
-                                            <option value="AL" data-select2-id="3">Alabama</option>
-                                            <option value="WY" data-select2-id="18">Wyoming</option>
-                                            <option value="AM" data-select2-id="19">America</option>
-                                            <option value="CA" data-select2-id="20">Canada</option>
-                                            <option value="RU" data-select2-id="21">Russia</option>
-                                      </select>
-                                         </div>
+                                         {{ vars.get('items')|safe }}
+                                     </div>
                                 </div>
-{#	                          <div class="form-group row">#}
-{##}
-{#	                            <label class="col-sm-4 col-form-label">Select Item Name</label>#}
-{#	                            <div class="col-sm-8">#}
-{#	                              {{ vars.get('items')|safe }}	#}
-{#	                            </div>#}
-{#	                          </div>#}
 	                        </div>
 	                        <div class="col-md-6">
 	                          <div class="form-group row">
@@ -69,24 +53,6 @@ DVK Polymers
 	                          </div>
 	                        </div>
 	                     </div>
-	                   <div class="dropdown example">
-      <h4 class="ui header">Search Selection</h4>
-      <p>A selection dropdown can allow a user to search through a large list of choices.</p>
-      <div class="ui simple search selection dropdown" id="search-select3">
-        <input type="hidden" name="country">
-        <i class="dropdown icon"></i>
-        <div class="default text">Select Country</div>
-        <div class="menu">
-        <div class="item" data-value="af"><i class="af flag"></i>Afghanistan</div>
-        <div class="item" data-value="ax"><i class="ax flag"></i>Aland Islands</div>
-        <div class="item" data-value="al"><i class="al flag"></i>Albania</div>
-        <div class="item" data-value="dz"><i class="dz flag"></i>Algeria</div>
-        <div class="item" data-value="as"><i class="as flag"></i>American Samoa</div>
-        <div class="item" data-value="ad"><i class="ad flag"></i>Andorra</div>
-
-       </div>
-   </div>
-</div>
 	                  <button type="submit" class="btn btn-gradient-primary mb-2">Submit</button>
 	                </form>
 	              </div>
@@ -108,8 +74,5 @@ DVK Polymers
 {% endblock %}
 
 {% block end_extJS %}
-
-    <script src="{{ url_for('static', filename='js/select2.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/typeahead.js') }}"></script>
 
 {% endblock %}

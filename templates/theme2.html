@@ -14,6 +14,8 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/vendor.bundle.base.css') }}" >
     <!-- endinject -->
     <!-- Plugin css for this page -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/select2.min.css') }}" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/select2-bootstrap.min.css') }}" >
   {% block extCSS %}
 
   {% endblock %}
@@ -254,6 +256,9 @@
 
 <script src="{{ url_for('static', filename='js/select2.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/typeahead.bundle.min.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/select2.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/typeahead.js') }}"></script>
 
 {% block end_extJS %}
 

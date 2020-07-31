@@ -40,8 +40,8 @@ DVK Polymers
                         	<label for="typeDropDown">Party Type</label>
                       		<select name="typeDropDown" class="form-control" id="typeDropDown">
                       			<option selected='selected' disabled='disabled'> Select Party Type</option>
-                      			<option value="creditor">Creditors</option>
-                      			<option value="debtor">Debtors</option>
+                      			<option value="creditor">Supplier</option>
+                      			<option value="debtor">Customer</option>
                       		</select>
                       	</div>
 	                	
@@ -103,33 +103,42 @@ DVK Polymers
 	}
 
 	function getBilldata(bill_no){
-		$.ajax({
-            url : '/get/bill/details?id=' +bill_no ,
-            success: function(data) {
-            	var i;
-            	for(i=0;i<data['itemDetails'].length;i++){
-            		var element = $('#'+bill_no+'-details');
-                	if(i!=0){
-                		var myTable = document.getElementById("billsTable");
-                		var newElement = document.createElement("tr");
-                		
-        				    newElement.innerHTML=data['itemDetails'][i];
+	    var el = document.getElementById('#'+bill_no+'-details');
 
-                		
-                		element.after(newElement);
-						// element.parentNode.insertBefore(newElement, element.nextSibling);
-        				// var currentRow = myTable.insertRow(currentIndex);
+        if(el == null) {
+            $.ajax({
+                url: '/get/bill/details?id=' + bill_no,
+                success: function (data) {
+                    var i;
+                    for (i = 0; i < data['itemDetails'].length; i++) {
+                        var element = $('#' + bill_no + '-details');
+                        if (i != 0) {
+                            var myTable = document.getElementById("billsTable");
+                            var newElement = document.createElement("tr");
 
-                	}
-                	else{
+                            newElement.innerHTML = data['itemDetails'][i];
 
-                		element.html(data['itemDetails'][i]);
-                	}
-            	}
-            	console.log("data successfully loaded!!");
-                $('.'+bill_no+'-toggle').attr('style','');
-            }
-        });
+
+                            element.after(newElement);
+                            // element.parentNode.insertBefore(newElement, element.nextSibling);
+                            // var currentRow = myTable.insertRow(currentIndex);
+
+                        } else {
+
+                            element.html(data['itemDetails'][i]);
+                        }
+                    }
+                    console.log("data successfully loaded!!");
+                    $('.' + bill_no + '-toggle').attr('style', '');
+                }
+            });
+        }
+        else if(el.style.display != "none"){
+	        el.style.display = "none";
+        }
+        else{
+            el.style.display = "block";
+        }
 	}
 
 </script>
@@ -221,7 +230,7 @@ DVK Polymers
             url : '/get/party/bills?id=' + this.value + '&type=debtor&from=' + String(from) + '&to='+String(to),
             success: function(data) {
                 $('#billsTable').html(data['tbody']);
-                sortByDate();
+                //sortByDate();
                 // Writing the value
                 localStorage && (localStorage.billsTable = $('#AllBills'));
             }
@@ -242,7 +251,7 @@ DVK Polymers
             url : '/get/party/bills?id=' + this.value + '&type=creditor&from=' + String(from) + '&to='+String(to),
             success: function(data) {
                 $('#billsTable').html(data['tbody']);
-                sortByDate();
+                //sortByDate();
             }
         });
 	});
