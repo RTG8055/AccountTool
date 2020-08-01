@@ -79,7 +79,7 @@ def enterDispatch():
             _vehicle_no = ''
 
         values = [_item_id, _quantity, str(_dispatch_date),_debtor_id, _vehicle_no]
-        call_procedure(insert_dispatch, values)
+        print("dipatch:",call_procedure(insert_dispatch, values))
     except Exception as e:
         return json.dumps({'errory': str(e)})
     else:

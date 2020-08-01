@@ -35,7 +35,7 @@ DVK Polymers
                               <input type="text" class="form-control" name="toDate" id='searchTo' placeholder="To Date" required>
                           </div>
                       </div>
-                      	
+
                       	<div class="form-group">
                         	<label for="typeDropDown">Party Type</label>
                       		<select name="typeDropDown" class="form-control" id="typeDropDown">
@@ -44,18 +44,18 @@ DVK Polymers
                       			<option value="debtor">Customer</option>
                       		</select>
                       	</div>
-	                	
+
 	                	    <div class="form-group" >
 							            <label for="partyDropDown">Party Name</label>
-                      		<div id="partyDropDown">	
+                      		<div id="partyDropDown">
                       		</div>
                       	</div>
                         <div class="form-group" >
                             <button onclick="showTable()">Search</button>
 {#                            ToDo#}
                             </div>
-
-                        <button onclick="generatePDF()" target="_blank">Print PDF <i class="mdi mdi-file-pdf"></i></button>
+                        </form>
+                        <button onclick="generatePDF()">Print PDF <i class="mdi mdi-file-pdf"></i></button>
 	                	<table class="table table-bordered table-hover items" id="AllBills">
 	                      <thead>
 	                        <tr class='billHead'>
@@ -68,10 +68,9 @@ DVK Polymers
 	                        </tr>
 	                      </thead>
 	                      <tbody id='billsTable'>
-	                        
+
 	                      </tbody>
                 		</table>
-	                </form>
 	              </div>
 	            </div>
 	          </div>
@@ -146,6 +145,9 @@ DVK Polymers
 
     function generatePDF() {
         var doc = new jsPDF();
+        var from = $("#searchFrom").val();
+        var to = $("#searchTo").val();
+        var partyName = document.getElementById("partyDropDown").firstElementChild.selectedOptions[0].innerHTML;
 
         var res = doc.autoTableHtmlToJson(document.getElementById("AllBills"));
         var columns = [res.columns[1], res.columns[2], res.columns[3], res.columns[4]];
@@ -158,7 +160,7 @@ DVK Polymers
         // Simple html example
         {#doc.autoTable({ html: '#billsTable' })#}
 
-        doc.save('table.pdf')
+        var s = doc.save( 'statement '+partyName+'- '+String(from)+' To '+String(to)+'.pdf');
       }
 
 {#    $(document).on('click', '#generatePDF', function(){#}

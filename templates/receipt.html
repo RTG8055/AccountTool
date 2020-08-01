@@ -32,16 +32,16 @@ DVK Polymers
 	                <p class="card-description"> Give appropriate values</p>
 	                <form class="form-sample" action="/receipt" method="post" id="receiptForm">
                       	<div class="form-group">
-								<label for="billDate">Bill Date</label>
-                               <div id="datepicker-popup" class="input-group date datepicker">
-                          <input type="text" class="form-control" name="billDate" id='date' placeholder="Bill Date" value="{{ vars.get('billDate')|safe }}" required>
-                          <span class="input-group-addon input-group-append border-left">
-                            <span class="mdi mdi-calendar input-group-text"></span>
-                          </span>
+                            <label for="billDate">Bill Date</label>
+                            <div id="datepicker-popup" class="input-group date datepicker">
+                                <input type="text" class="form-control" name="billDate" id='date' placeholder="Bill Date" value="{{ vars.get('billDate')|safe }}" required>
+                                <span class="input-group-addon input-group-append border-left">
+                                    <span class="mdi mdi-calendar input-group-text"></span>
+                                </span>
+                            </div>
                         </div>
-    	                   </div>
-	                	    <div class="form-group">
-                        	<label for="debtorDropDown">Party Name</label>
+	                	<div class="form-group">
+                            <label for="debtorDropDown">Party Name</label>
                       		{{ vars.get('debtors')|safe }}
                       	</div>
                       	<p class="card-description" id="currBal"></p>

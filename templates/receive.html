@@ -40,7 +40,7 @@ DVK Polymers
 	                          <div class="form-group row">
 	                            <label class="col-sm-4 col-form-label">Enter Quantity</label>
 	                            <div class="col-sm-8">
-	                              <input name='quantity' type="number" id="quantity" name="Quantity" placeholder="Quantity in kGs" title="Enter Quantity" required>
+	                              <input name='quantity' class="form-control" type="number" id="quantity" name="Quantity" placeholder="Quantity in kGs" title="Enter Quantity" required>
 	                            </div>
 	                          </div>
 	                        </div>
@@ -48,7 +48,12 @@ DVK Polymers
 	                          <div class="form-group row">
 	                            <label class="col-sm-4 col-form-label">Select Date</label>
 	                            <div class="col-sm-8">
-							        <input type="date" name="receipt_date" value="{{ vars.get('billDate')|safe }}">
+                                    <div id="datepicker-popup" class="input-group date datepicker">
+                                          <input type="text" class="form-control" name="receipt_date" id='date' placeholder="Bill Date" value="{{ vars.get('billDate')|safe }}" required>
+                                          <span class="input-group-addon input-group-append border-left">
+                                            <span class="mdi mdi-calendar input-group-text"></span>
+                                          </span>
+                                    </div>
 	                            </div>
 	                          </div>
 	                        </div>
