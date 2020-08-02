@@ -16,11 +16,15 @@ usersTable = 'app_users'
 
 
 def call_procedure(procedure_name, args):
-    conn = MySql.connect(host=host, user=user, password=password, db=dbname)
-    c = conn.cursor()
-    result = c.callproc(procedure_name, args)
-    conn.commit()
-    conn.close()
+    try:
+        conn = MySql.connect(host=host, user=user, password=password, db=dbname)
+        c = conn.cursor()
+        result = c.callproc(procedure_name, args)
+    except Exception as e:
+        print(e)
+    finally:
+        conn.commit()
+        conn.close()
     return result
 
 
@@ -70,7 +74,6 @@ def updateInvoiceDetails(bill_no, _item_all, _quantity_all, _rate_all, _amount_a
 
 def getData(table, columns='*', condition='blank', extra='no'):
     conn = MySql.connect(host=host, user=user, password=password, db=dbname)
-    # conn = mysql.connect()
     if (condition != 'blank'):
         finalCondition = "where {}".format(condition)
     else:

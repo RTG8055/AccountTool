@@ -25,6 +25,6 @@
 	width: 40px !important;
 }
 table.items {
-  table-layout: auto;
-  width: 100%;  
+  table-layout: auto !important;
+  width: 100% !important;
 }

@@ -1,7 +1,7 @@
 import locale
 import os
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 import datetime
 
 from flask import Flask, render_template, redirect, json, request, session, jsonify
@@ -14,12 +14,11 @@ app = Flask(__name__)
 
 app.secret_key = '8bf9547569cd5a638931a8639cf9f86237931e92'
 
-databaseName = 'example6.db'
 itemsTable = 'items'
 debtorsTable = 'debtors'
 creditorsTable = 'creditors'
 usersTable = 'app_users'
-access_groups = []
+access_groups = ['all_access','inventory_only',]
 
 insert_dispatch = 'insert_dispatch'
 insert_receive = 'insert_receive'
@@ -30,6 +29,7 @@ insert_invoice_details = 'insert_invoice_details'
 insert_item = 'insert_item'
 insert_user = 'insert_user'
 update_invoice = 'update_invoice'
+validate_login = 'validate_login'
 
 
 @app.route('/')
@@ -128,27 +128,106 @@ def enterReceive():
         return json.dumps({'errory': str(e)})
 
 
+@app.route('/viewbills')
+def viewDailyBills():
+    if (session.get('user_id') and session.get('access_group') == 'all_access'):
+        try:
+            fromBillDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get(
+                'toBillDate')
+            toBillDate = (date.today() - timedelta(days=1)).strftime("%d/%m/%Y") if session.get(
+                'billDate') is None else session.get('fromBillDate')
+            return showWebPage('viewBills.html', {'fromBillDate': fromBillDate, 'toBillDate': toBillDate})
+        except Exception as e:
+            return json.dumps({'errory': str(e)})
+    else:
+        return showWebPage('404.html', {'error': "no access"})
+
 @app.route('/viewpartybills')
 def viewPartyBills():
     if (session.get('user_id') and session.get('access_group') == 'all_access'):
         try:
-            return showWebPage('viewParties.html', {})
+            fromBillDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('toBillDate')
+            toBillDate = (date.today() - timedelta(days=1)).strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('fromBillDate')
+            return showWebPage('viewParties.html', {'fromBillDate': fromBillDate, 'toBillDate': toBillDate})
+        except Exception as e:
+            return json.dumps({'errory': str(e)})
+    else:
+        return showWebPage('404.html', {'error': "no access"})
+
+@app.route('/viewinventory')
+def viewInventory():
+    if (session.get('user_id') and session.get('access_group') == 'all_access'):
+        try:
+            fromBillDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('toBillDate')
+            toBillDate = (date.today() - timedelta(days=1)).strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('fromBillDate')
+
+            items = getData('items')
+            print(items)
+            itemsJson = []
+            for item in items:
+                r={}
+                r['Item Name'] = item[1]
+                r['Current Quantity in kGs'] = item[4]
+                itemsJson.append(r)
+            return showWebPage('viewInventory.html', {'fromBillDate': fromBillDate, 'toBillDate': toBillDate, 'items': itemsJson})
         except Exception as e:
             return json.dumps({'errory': str(e)})
     else:
         return showWebPage('404.html', {'error': "no access"})
 
 
-#
-# @app.route('/viewpartybills', methods=['GET', 'POST'])
-# def viewPartyBillsReq():
-#     if (session.get('user_id') and session.get('access_group') == 'all_access'):
-#         try:
-#             return showWebPage('viewParties.html', {})
-#         except Exception as e:
-#             return json.dumps({'errory': str(e)})
-#     else:
-#         return showWebPage('404.html', {'error': "no access"})
+@app.route('/dailyinventory')
+def viewDailyInventory():
+    if (session.get('user_id') and session.get('access_group') == 'all_access'):
+        try:
+            fromBillDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('toBillDate')
+            toBillDate = (date.today() - timedelta(days=1)).strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('fromBillDate')
+
+            dispatch_items = getData('daily_inventory d', 'bill_no, d.item_id, Qty, inv_date, items.name as item_name, debtors.name as party_name ', extra='natural join invoice join debtors on invoice.party_id = debtors.debtor_id join items on d.item_id = items.item_id')
+            received_items = getData('daily_inventory d', 'bill_no, d.item_id, Qty, inv_date, items.name as item_name, creditors.name as party_name ', extra='natural join invoice join creditors on invoice.party_id = creditors.creditor_id join items on d.item_id = items.item_id')
+            print(dispatch_items)
+            itemsJson = []
+            for item in dispatch_items:
+                r = {'Invoice Date': item[3].strftime("%d/%m/%Y"), 'Item Name': item[4], 'Party Name': item[5],
+                     'Dispatch Quantity in kGs': item[2], 'Received Quantity in kGs': ''}
+                itemsJson.append(r)
+            for item in received_items:
+                r = {'Invoice Date': item[3].strftime("%d/%m/%Y"), 'Item Name': item[4], 'Party Name': item[5],
+                     'Dispatch Quantity in kGs': '', 'Received Quantity in kGs': item[2]}
+                itemsJson.append(r)
+
+            return showWebPage('viewDailyInventory.html', {'fromBillDate': fromBillDate, 'toBillDate': toBillDate, 'items': itemsJson})
+        except Exception as e:
+            return json.dumps({'errory': str(e)})
+    else:
+        return showWebPage('404.html', {'error': "no access"})
+
+
+@app.route('/inventoryflow')
+def viewGoddownInventory():
+    if (session.get('user_id') and session.get('access_group') == 'all_access'):
+        try:
+            fromBillDate = date.today().strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('toBillDate')
+            toBillDate = (date.today() - timedelta(days=1)).strftime("%d/%m/%Y") if session.get('billDate') is None else session.get('fromBillDate')
+
+            dispatch_items = getData('dispatch d', 'd.item_id, qty, dispatch_date, items.name as item_name, debtors.name as party_name ', extra='join items on d.item_id = items.item_id join debtors on d.debtor_id = debtors.debtor_id')
+            received_items = getData('receive d', 'd.item_id, qty, receive_date, items.name as item_name, creditors.name as party_name', extra='join items on d.item_id = items.item_id join creditors on d.creditor_id = creditors.creditor_id')
+            print(dispatch_items)
+            itemsJson = []
+            for item in dispatch_items:
+                r = {'Invoice Date': item[2].strftime("%d/%m/%Y"), 'Item Name': item[3], 'Party Name': item[4],
+                     'Dispatch Quantity in kGs': item[1], 'Received Quantity in kGs': ''}
+                itemsJson.append(r)
+            for item in received_items:
+                r = {'Invoice Date': item[2].strftime("%d/%m/%Y"), 'Item Name': item[3], 'Party Name': item[4],
+                     'Dispatch Quantity in kGs': '', 'Received Quantity in kGs': item[1]}
+                itemsJson.append(r)
+
+            return showWebPage('viewDailyInventory.html', {'fromBillDate': fromBillDate, 'toBillDate': toBillDate, 'items': itemsJson})
+        except Exception as e:
+            return json.dumps({'errory': str(e)})
+    else:
+        return showWebPage('404.html', {'error': "no access"})
 
 
 @app.route('/additem')
@@ -510,34 +589,15 @@ def showSignUp():
 
 @app.route('/login', methods=['POST'])
 def validateLogin():
-    print(os.getcwd())
-    print(os.path.realpath(databaseName))
-    # conn = sqlite3.connect("C:\\Users\\rahagaga\\Documents\\Rahul\\github\\AccountTool\\example6.db")
-    conn = sqlite3.connect(databaseName)
-    # conn = mysql.connect()
-    cursor = conn.cursor()
     try:
         _email = request.form.get('inputEmail')
         _password = request.form.get('inputPassword')
-        # captcha_response = request.form.get('g-recaptcha-response')
         print(_email + " " + _password)
-        # validate the received values
-        # conn = sqlite3.connect(os.path.realpath(databaseName))
         if _email and _password:
-
-            # All Good, let's call MySQL
-            # validate captcha from api
-            # r = requests.post('https://www.google.com/recaptcha/api/siteverify', data = {'secret':captcha_secret_key ,'response':captcha_response})
-            # is_success_captcha = r.json()['success']
             try:
-                # data = cursor.callproc('validate_login_inquizitive',(_email, _password))
-                data = cursor.execute(
-                    'select * from app_users where email="' + _email + '" and password="' + _password + '"')
-                data = cursor.fetchall()
-                # if len(data) > 0:
-                # conn.commit()
+                values = [_email,_password]
+                data = call_procedure(validate_login,values)
                 if len(data) > 0:
-                    conn.commit()
                     session['user_id'] = str(data[0][0])
                     session['name'] = str(data[0][1])
                     session['email'] = str(data[0][2])
@@ -550,12 +610,8 @@ def validateLogin():
                 return json.dumps({'errory': str(e)})
         else:
             return showWebPage('404.html', {'error': "Enter all the values. Please :("})
-
     except Exception as e:
         return json.dumps({'errory': str(e)})
-    finally:
-        cursor.close()
-        conn.close()
 
 
 @app.route("/get/bal")
@@ -600,13 +656,10 @@ def getParties():
 @app.route("/get/bill/details")
 def getBillDetails():
     _id = request.args.get('id', 0)
-    # (bill_no text, item_id text, qty real, rate real, amount real, foreign key(bill_no) REFERENCES invoice(bill_no))''')
-
     data = getData('invoice_details natural join items', 'items.name, qty, rate, amount', "bill_no='{}'".format(_id))
-    print(data)
-
+    print("bill Details: ",data)
     itemDetails = createBillDetailsRow(data, ['item_id', 'qty', 'rate', 'amount'], [0, 1, 2, 3])
-    print(itemDetails)
+    # print(itemDetails)
     return jsonify({
         "itemDetails": itemDetails,
     })
@@ -623,24 +676,10 @@ def getPartyDetailsPDF():
         FILTER += "and bill_date > '{}'".format(datetime.datetime.strptime(_from,"%d/%m/%Y"))
     if (_to != "9999"):
         FILTER += "and bill_date < '{}'".format(datetime.datetime.strptime(_to,"%d/%m/%Y"))
-        # (bill_no text, party_id text, narration text, total_amt real, type text,bill_date text)''')
 
     print("to and from : ", datetime.datetime.strptime(_to,"%d/%m/%Y"), datetime.datetime.strptime(_from,"%d/%m/%Y"))
     data = getData('invoice', "bill_no, narration, total_amt, bill_date, type", "party_id ='{}' {}".format(_id, FILTER),
                    " order by bill_date")
-    print(data)
-    # fig, ax = plt.subplots()
-    # fig.patch.set_visible(False)
-    # ax.axis('off')
-    # ax.axis('tight')
-    # df = pd.DataFrame(data, columns=['bill_no', 'narration', 'total_amt', 'bill_date', 'type'])
-    # ax.table(cellText=df.values, colLabels=df.columns, loc='center')
-    # fig.tight_layout()
-    #
-    # plt.show()
-    #
-    # plt.savefig("table.pdf", bbox_inches='tight')
-
     tbody = createBillsTablePDF(data, ['bill_no', 'narration', 'total_amt', 'bill_date', 'type'], [0, 3, 2], 4, _type)
     print(tbody)
     return jsonify({
@@ -692,7 +731,6 @@ def showWebPage(page, vars):
 
 
 def createBillDetailsRow(data, columns, indexes):
-    # data,['item_id','qty','rate','amount',],[0,3,2],4):
     i = 0
     trow = []
     for row in data:
@@ -756,9 +794,7 @@ def createBillsTablePDF(data, columns, indexes, type_index, partyType):
     for row in data:
         bill_id = row[indexes[0]]
         bill_no = 'bill' + str(i)
-        # tbody += "<tbody class='bill-row'>"
         tbody += "<tr id='" + bill_no + "' class='bill'> "
-        # tbody += '<td><a onclick="getBilldata(\'{}\')"><i class="mdi mdi-arrow-down">expand</a></td>'.format(bill_id)
         for index in indexes:
             if (columns[index] == 'total_amt' and (row[type_index] == 'receipt' or row[type_index] == 'purchase')):
                 cred_sum += float(row[index])
@@ -770,18 +806,6 @@ def createBillsTablePDF(data, columns, indexes, type_index, partyType):
                 tbody += "<td></td>"
             else:
                 tbody += "<td>" + str(row[index]) + "</td>"
-        # tbody += "<td><a href='/editbill/{}/{}'><i class='mdi mdi-border-color'>Edit</td></a>".format(row[0], partyType)
-
-        # tbody += "</tr>\
-        #     <tr style='display: none;' class='{}-toggle billDetailHead'>\
-        #     <th></th>\
-        #     <th>Item</th>\
-        #     <th>Quantity</th>\
-        #     <th>Rate</th>\
-        #     <th>Total</th>\
-        #     </tr><tr style='display: none;' class='{}-toggle billDetail' id='{}-details'></tr>".format(bill_id, bill_id,
-        #                                                                                                bill_id)
-        # tbody += "</tbody>"
         i += 1
     tbody += "<tr id='totals' style='font-weight: bold;' class='billEnd'><td>Total</td><td></td><td></td><td>" + locale.currency(
         float(debt_sum), grouping=True, symbol=False) + "</td><td>" + locale.currency(float(cred_sum), grouping=True,
@@ -805,7 +829,6 @@ def createBillsTable(data, columns, indexes, type_index, partyType):
     for row in data:
         bill_id = row[indexes[0]]
         bill_no = 'bill' + str(i)
-        # tbody += "<tbody class='bill-row'>"
         tbody += "<tr id='" + bill_no + "' class='bill'> "
         tbody += '<td><a onclick="getBilldata(\'{}\')"><i class="mdi mdi-arrow-down">expand</a></td>'.format(bill_id)
         for index in indexes:
@@ -819,10 +842,7 @@ def createBillsTable(data, columns, indexes, type_index, partyType):
                 tbody += "<td></td>"
             else:
                 tbody += "<td>" + str(row[index]) + "</td>"
-        tbody += "<td><a href='/editbill/{}/{}/{}'><i class='mdi mdi-border-color'>Edit</td></a>".format(row[0],
-                                                                                                         partyType, row[
-                                                                                                             type_index])
-
+        tbody += "<td><a href='/editbill/{}/{}/{}'><i class='mdi mdi-border-color'>Edit</td></a>".format(row[0],partyType, row[type_index])
         tbody += "</tr>\
         <tr style='display: none;' class='{}-toggle billDetailHead'>\
         <th></th>\
@@ -832,7 +852,6 @@ def createBillsTable(data, columns, indexes, type_index, partyType):
         <th>Total</th>\
         </tr><tr style='display: none;' class='{}-toggle billDetail' id='{}-details'></tr>".format(bill_id, bill_id,
                                                                                                    bill_id)
-        # tbody += "</tbody>"
         i += 1
     tbody += "<tr id='totals' style='font-weight: bold;' class='billEnd'><td></td><td>Total</td><td></td><td>" + locale.currency(
         float(debt_sum), grouping=True, symbol=False) + "</td><td>" + locale.currency(float(cred_sum), grouping=True,

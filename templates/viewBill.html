@@ -18,21 +18,9 @@ DVK Polymers
 	      	  <div class="col-14 grid-margin stretch-card">
 	            <div class="card">
 	              <div class="card-body">
-	                <h4 class="card-title">View All Bill</h4>
-	                <p class="card-description"> Daily Bills</p>
-                      <form class="form-sample" action="/viewbills" method="post" id="displayForm">
-                      <div class="form-group">
-                          <div class="input-group input-daterange datepicker-autoclose d-flex align-items-center">
-                              <label for="fromDate"></label>
-                              <div class="input-group-addon mx-4">From</div>
-                              <input type="text" class="form-control" name="fromDate" id='searchFrom' placeholder="From Date" value="{{ vars.get('fromBillDate')|safe }}" required>
-                              <div class="input-group-addon mx-4">To</div>
-                              <label for="toDate"></label>
-                              <input type="text" class="form-control" name="toDate" id='searchTo' placeholder="To Date" value="{{ vars.get('toBillDate')|safe }}" required>
-                          </div>
-                      </div>
-                      </form>
-                  </div>
+	                <h4 class="card-title">View Bill Details</h4>
+	                <p class="card-description"> Party Name {{ }}<br> Bill No {{ }}</p>
+	                
 	                	<table class="table table-hover items">
 	                      <thead>
 	                        <tr>

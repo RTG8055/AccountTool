@@ -29,10 +29,10 @@ DVK Polymers
                           <div class="input-group input-daterange datepicker-autoclose d-flex align-items-center">
                               <label for="fromDate"></label>
                               <div class="input-group-addon mx-4">From</div>
-                              <input type="text" class="form-control" name="fromDate" id='searchFrom' placeholder="From Date" required>
+                              <input type="text" class="form-control" name="fromDate" id='searchFrom' placeholder="From Date" value="{{ vars.get('fromBillDate')|safe }}" required>
                               <div class="input-group-addon mx-4">To</div>
                               <label for="toDate"></label>
-                              <input type="text" class="form-control" name="toDate" id='searchTo' placeholder="To Date" required>
+                              <input type="text" class="form-control" name="toDate" id='searchTo' placeholder="To Date" value="{{ vars.get('toBillDate')|safe }}" required>
                           </div>
                       </div>
 
@@ -55,6 +55,8 @@ DVK Polymers
 {#                            ToDo#}
                             </div>
                         </form>
+                      <button onclick="generatePDF()" type="button" class="btn btn-gradient-dark btn-icon-text"> Print PDF<i class="mdi mdi-printer btn-icon-append"></i>
+                          </button>
                         <button onclick="generatePDF()">Print PDF <i class="mdi mdi-file-pdf"></i></button>
 	                	<table class="table table-bordered table-hover items" id="AllBills">
 	                      <thead>

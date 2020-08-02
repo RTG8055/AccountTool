@@ -1,0 +1,90 @@
+{% extends "theme2.html" %}
+
+{% block title %}
+DVK Polymers
+{% endblock %}
+
+
+{% block extCSS %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jsgrid.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jsgrid-theme.min.css') }}">
+{% endblock %}
+{% block body %}
+
+<div class="main-panel">
+  <div class="content-wrapper">
+      <div class="page-header">
+          <h3 class="page-title"> Inventory Table</h3>
+      </div>
+    <div class="row grid-margin">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">Items Table</h4>
+            <p class="card-description">Current Stock available</p>
+            <div id="js-grid-static"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+	  <!-- content-wrapper ends -->
+  	<!-- partial:../../partials/_footer.html -->
+  	<footer class="footer">
+	    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+  			<span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2017 <a href="https://www.bootstrapdash.com/" target="_blank">BootstrapDash</a>. All rights reserved.</span>
+      		<span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i class="mdi mdi-heart text-danger"></i></span>
+    	</div>
+  	</footer>
+ <!-- partial -->
+</div>
+</div>
+
+{% endblock %}
+
+{% block end_extJS %}
+<script type="text/javascript">
+	(function($) {
+  (function() {
+
+    var db = {
+
+      loadData: function(filter) {
+        return $.grep(this.clients, function(client) {
+          return (!filter.Name || client.Name.indexOf(filter.Name) > -1) &&
+            (filter.Age === undefined || client.Age === filter.Age) &&
+            (!filter.Address || client.Address.indexOf(filter.Address) > -1) &&
+            (!filter.Country || client.Country === filter.Country) &&
+            (filter.Married === undefined || client.Married === filter.Married);
+        });
+      },
+
+      insertItem: function(insertingClient) {
+        this.clients.push(insertingClient);
+      },
+
+      updateItem: function(updatingClient) {},
+
+      deleteItem: function(deletingClient) {
+        var clientIndex = $.inArray(deletingClient, this.clients);
+        this.clients.splice(clientIndex, 1);
+      }
+
+    };
+
+    window.db = db;
+
+    db.items =  {{ vars.get('items') | tojson | safe}};
+
+  }());
+})(jQuery);
+</script>
+
+    <script src="{{ url_for('static', filename='js/jsgrid.min.js') }}"></script>
+   <script src="{{ url_for('static', filename='js/formpickers.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/form-addons.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/form-repeater.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/inputmask.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/js-grid.js') }}"></script>
+{% endblock %}

@@ -4,9 +4,8 @@
 DVK Polymers
 {% endblock %}
 
-
 {% block extCSS %}
-    <link rel="stylesheet" type="text/css" href="../static/css/invoice.css" >
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/invoice.css') }}" >
 {% endblock %}
 
 
@@ -40,7 +39,8 @@ DVK Polymers
 	                			<label for="creditorDropDown">Party Name</label>
                       			{{ vars.get('creditors')|safe }}
                       	</div>
-                      	
+                      	<a href="/addparty" target="_blank" class="btn btn-sm btn-outline-primary">Add Party</a>
+                        <a href="/additem" target="_blank" class="btn btn-sm btn-outline-primary">Add Item</a>
 
 	                	<table class="table table-hover items">
 	                      <thead>
@@ -54,7 +54,7 @@ DVK Polymers
 	                          <th></th>
 	                        </tr>
 	                      </thead>
-	                      <tbody id='itemsTable'>
+	                      <tbody id='itemsTable' class="items">
 	                        <tr id='item1'>
 	                        	<td id='sno1'>1.</td>
 	                          <td id='itemId1'>
@@ -74,7 +74,7 @@ DVK Polymers
 	                          	<input name='amount1' type="number" id="Amount" placeholder="Amount" title="Amount" step="0.01" class="Amount form-control" readonly>
 	                          </td>
 	                          <td id='addItem'><i class="mdi mdi-backspace icon-md " style='float:left;' onclick="removeItem('1')"></i>
-	                          	<button id='addButton' class="btn btn-block btn-lg btn-gradient-primary mt-4" onclick="addItem('2');">+ Add an Item</button>
+	                          	<button id='addButton' class="btn btn-block btn-sm btn-gradient-primary mt-4" onclick="addItem('2');">+ Add an Item</button>
 	                          </td>
 	                        </tr>
 	                    	</tbody>
@@ -185,7 +185,7 @@ DVK Polymers
         var addRowBox = document.createElement("button");
         addRowBox.setAttribute("onclick", "addItem("+String(nextVal)+");");
         addRowBox.setAttribute("id", "addButton");
-        addRowBox.setAttribute("class", "btn btn-block btn-lg btn-gradient-primary mt-4");
+        addRowBox.setAttribute("class", "btn btn-block btn-sm btn-gradient-primary mt-4");
         addRowBox.innerHTML = "+ Add an Item";
 
         var removeIcon = document.createElement("i");
