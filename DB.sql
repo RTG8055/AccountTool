@@ -97,6 +97,18 @@ CREATE TABLE daily_inventory
     FOREIGN KEY(bill_no) REFERENCES invoice(bill_no)
   );
 
+-------------------------LOGIN-------------------------
+DROP PROCEDURE IF EXISTS validate_login;
+DELIMITER $$
+CREATE PROCEDURE validate_login(in e varchar(100), in p varchar(100))
+BEGIN
+  SELECT * FROM app_users WHERE email = e and password=p;
+END
+$$
+DELIMITER ;
+
+call validate_login('abc@gmail.com','123');
+call validate_login('abc@gmail.com','122');
 -------------------------ITEM---------------------------
 DROP TRIGGER IF EXISTS trigger_items;
 DELIMITER $$
@@ -714,3 +726,14 @@ DELIMITER ;
 call update_invoice_details('BD00001', 'B000001', 'IT00001', 1000, 11, 11000);
 -- call update_invoice_details('B000016', 'IT00001', 'IT00001', 200, 12, 2400);
 ---------------------------------------------------------------------
+
+
+select item_id, qty, INV_DATE, name from daily_inventory d, invoice i, creditors c,debtors db where d.bill_no==i.bill_no and i.party_id in (c.creditor_id, db.debtor_id);
+
+select bill_no, d.item_id, Qty, inv_date, items.name as item_name, debtors.name as party_name from daily_inventory d natural join invoice join debtors on invoice.party_id = debtors.debtor_id join items on d.item_id = items.item_id;
+
+select bill_no, d.item_id, Qty, inv_date, items.name as item_name, creditors.name as party_name from daily_inventory d natural join invoice join creditors on invoice.party_id = creditors.creditor_id join items on d.item_id = items.item_id;
+
+
+select d.item_id, qty, dispatch_date, items.name as item_name, debtors.name as party_name from dispatch d join items on d.item_id = items.item_id join debtors on d.debtor_id = debtors.debtor_id;
+select d.item_id, qty, receive_date, items.name as item_name, creditors.name as party_name from receive d join items on d.item_id = items.item_id join creditors on d.creditor_id = creditors.creditor_id;
