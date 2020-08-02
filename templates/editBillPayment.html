@@ -13,29 +13,30 @@ DVK Polymers
 		<div class="col-md-6 grid-margin stretch-card">
         	<div class="card">
               <div class="card-body">
-                <h4 class="card-title">Payment Edit</h4>
-                <p class="card-description"> Give appropriate values</p>
-                <form class="form-sample" action="/editBillPayment" method="post" id="paymentForm">
+                <h4 class="card-title">Edit Bill</h4>
+                <p class="card-description"> Edit For Bill Number: {{ vars.get('billNo')|safe }}</p>
+                <form class="form-sample" action="/editbillPayment?billNo={{ vars.get('billNo')|safe }}&billType={{ vars.get('billType')|safe }}" method="post" id="paymentForm">
                   	<div class="form-group">
-								<label for="billDate">Bill Date</label>
-                               <div id="datepicker-popup" class="input-group date datepicker">
+
+                        <label for="billDate">Bill Date</label>
+                       <div id="datepicker-popup" class="input-group date datepicker">
                           <input type="text" class="form-control" name="billDate" id='date' placeholder="Bill Date" value="{{ vars.get('billDate')|safe }}" required>
                           <span class="input-group-addon input-group-append border-left">
                             <span class="mdi mdi-calendar input-group-text"></span>
                           </span>
                         </div>
-    	                   </div>
+                        </div>
                 	<div class="form-group">
-	                			<label for="partyName">Party Name: {{ vars.get('partyList')|safe }}</label>
-                      	</div>
+                        <label for="partyName">Party Name: {{ vars.get('partyList')|safe }}</label>
+                    </div>
                   	<p class="card-description" id="currBal"></p>
                 	<div class="form-group">
-						<label for="amount">Amount</label>
-	                    <input type="number" class="form-control" name="amount" placeholder="Amount" required>
+						<label for="totalAmount">Amount</label>
+	                    <input type="number" class="form-control" name="totalAmount" placeholder="Amount" value="{{ vars.get('prevAmt')|safe }}" required>
                     </div>
                     <div class="form-group">
 						<label for="narration">Narration</label>
-                    	<textarea name="narration" class="form-control" form='paymentForm' placeholder="Narration"></textarea>
+                    	<textarea name="narration" class="form-control" form='paymentForm' placeholder="Narration">{{ vars.get('narration')|safe }}</textarea>
                     </div>
                     <button type="submit" class="btn btn-gradient-primary mb-2">Submit</button>
                 </form>

@@ -42,6 +42,20 @@ def insertInvoiceDetails(bill_no, _item_all, _quantity_all, _rate_all, _amount_a
         values = [bill_no, item, qty, rate, amt]
         call_procedure('insert_invoice_details', values)
 
+def updateInvoiceDetails(bill_no, _item_all, _quantity_all, _rate_all, _amount_all, _bill_detail_all, _type, _bill_date, old_item_nos):
+    i=0
+    print(i, old_item_nos, i <= old_item_nos)
+    print(_bill_detail_all)
+    for (item, qty, rate, amt) in zip(_item_all, _quantity_all, _rate_all, _amount_all):
+        i+=1
+        print(i, old_item_nos, i <= old_item_nos)
+        if(i<=old_item_nos):
+            values = [_bill_detail_all[i-1], bill_no, item, qty, rate, amt]
+            call_procedure('update_invoice_details', values)
+        else:
+            values = [bill_no, item, qty, rate, amt]
+            call_procedure('insert_invoice_details', values)
+
 
 # def insertData(table, columns, values):
 #     conn = MySql.connect(databaseName)

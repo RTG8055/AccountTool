@@ -19,6 +19,7 @@ CREATE TABLE invoice
 
 CREATE TABLE invoice_details
   (
+    bill_detail_id varchar(100) PRIMARY KEY,
     bill_no varchar(100),
     item_id varchar(100),
     qty real,
@@ -535,11 +536,39 @@ BEGIN
 END$$
 DELIMITER ;
 
-call update_invoice('B000005', 'CR00001','','60000', '2020-07-22');
+call update_invoice('B000005', 'DB00002','','60000', '2020-07-22');
 call update_invoice('B000006', 'CR00002','','600', '2020-07-12');
+call update_invoice('B000016', 'DB00002','abcd','2411', '2020-07-12');
 
 --------------------------------------------------------------------------------
 --------------------------------INVOICE DETAILS---------------------------------
+
+
+DROP TRIGGER IF EXISTS trigger_invoices_details;
+DELIMITER $$
+CREATE TRIGGER trigger_invoices_details
+BEFORE INSERT
+ON invoice_details
+FOR EACH ROW
+BEGIN
+  DECLARE max_bill_detail_id varchar(100);
+
+  IF (NEW.bill_detail_id = 'xxx') THEN
+    SELECT
+      MAX(bill_detail_id) INTO max_bill_detail_id
+    FROM
+      invoice_details;
+    IF (max_bill_detail_id IS NULL) THEN
+      SELECT 'BD00001' INTO max_bill_detail_id;
+      SET NEW.bill_detail_id = max_bill_detail_id;
+    ELSE
+      SET NEW.bill_detail_id = CONCAT(SUBSTR(max_bill_detail_id, 1,2), LPAD(SUBSTR(max_bill_detail_id, 3) + 1, 5, '0'));
+    END IF;
+  END IF;
+END$$
+
+DELIMITER ;
+
 
 DROP TRIGGER IF EXISTS trigger_insert_invoice_details_update_Quantity;
 DELIMITER $$
@@ -585,7 +614,7 @@ DROP PROCEDURE IF EXISTS insert_invoice_details;
 DELIMITER $$
 CREATE PROCEDURE insert_invoice_details(IN n_bill_no VARCHAR(100), item_id VARCHAR(100), IN qty REAL, IN rate REAL, amount REAL)
 BEGIN
-    INSERT INTO invoice_details(bill_no, ITEM_ID, qty, rate, amount) VALUES (n_bill_no, item_id, qty, rate, amount);
+    INSERT INTO invoice_details(bill_detail_id, bill_no, ITEM_ID, qty, rate, amount) VALUES ('xxx', n_bill_no, item_id, qty, rate, amount);
 END$$
 DELIMITER ;
 
@@ -676,16 +705,12 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS update_invoice_details;
 DELIMITER $$
-CREATE PROCEDURE update_invoice_details(IN n_bill_no VARCHAR(100),o_item_id VARCHAR(100), n_item_id VARCHAR(100), IN n_qty REAL, IN n_rate REAL, n_amount REAL)
+CREATE PROCEDURE update_invoice_details(IN n_bill_detail_id VARCHAR(100), IN n_bill_no VARCHAR(100), n_item_id VARCHAR(100), IN n_qty REAL, IN n_rate REAL, n_amount REAL)
 BEGIN
-  UPDATE invoice_details set item_id = n_item_id, qty = n_qty, rate = n_rate, amount = n_amount where bill_no = n_bill_no and item_id = o_item_id;
+  UPDATE invoice_details set item_id = n_item_id, qty = n_qty, rate = n_rate, amount = n_amount where bill_detail_id = n_bill_detail_id;
 END$$
 DELIMITER ;
 
-call update_invoice_details('B000001', 'IT00001', 'IT00001', 1000, 11, 11000);
-call update_invoice_details('B000002', 'IT00001', 'IT00001', 100, 10, 1000);
-call update_invoice_details('B000005', 'IT00001', 'IT00001', 2000, 10, 1000);
-call update_invoice_details('B000001', 'IT00002', 'IT00002', 100, 10, 1000);
-call update_invoice_details('B000002', 'IT00002', 'IT00002', 100, 10, 1000);
-
+call update_invoice_details('BD00001', 'B000001', 'IT00001', 1000, 11, 11000);
+-- call update_invoice_details('B000016', 'IT00001', 'IT00001', 200, 12, 2400);
 ---------------------------------------------------------------------
