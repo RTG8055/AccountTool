@@ -598,6 +598,7 @@ def validateLogin():
                 values = [_email,_password]
                 data = call_procedure(validate_login,values)
                 if len(data) > 0:
+                    data = getData("app_users",condition="email='{}' and password='{}'".format(_email,_password))
                     session['user_id'] = str(data[0][0])
                     session['name'] = str(data[0][1])
                     session['email'] = str(data[0][2])

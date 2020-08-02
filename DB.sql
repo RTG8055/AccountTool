@@ -548,10 +548,8 @@ BEGIN
 END$$
 DELIMITER ;
 
-call update_invoice('B000005', 'DB00002','','60000', '2020-07-22');
-call update_invoice('B000006', 'CR00002','','600', '2020-07-12');
-call update_invoice('B000016', 'DB00002','abcd','2411', '2020-07-12');
-
+call update_invoice('B000001', 'DB00002','','60000', '2020-07-22');
+call update_invoice('B000003', 'CR00002','','600', '2020-07-12');
 --------------------------------------------------------------------------------
 --------------------------------INVOICE DETAILS---------------------------------
 
@@ -630,11 +628,11 @@ BEGIN
 END$$
 DELIMITER ;
 
-call insert_invoice_details('B000001', 'IT00001', 1000, 10, 10000);
+call insert_invoice_details('B000003', 'IT00001', 1000, 10, 10000);
 call insert_invoice_details('B000002', 'IT00001', 100, 10, 1000);
-call insert_invoice_details('B000005', 'IT00001', 2000, 10, 1000);
-call insert_invoice_details('B000001', 'IT00002', 100, 10, 1000);
+call insert_invoice_details('B000003', 'IT00002', 100, 10, 1000);
 call insert_invoice_details('B000002', 'IT00002', 100, 10, 1000);
+
 
 
 DROP TRIGGER IF EXISTS trigger_before_update_invoice_details_update_Quantity;
@@ -723,7 +721,7 @@ BEGIN
 END$$
 DELIMITER ;
 
-call update_invoice_details('BD00001', 'B000001', 'IT00001', 1000, 11, 11000);
+call update_invoice_details('BD00001', 'B000002', 'IT00001', 1000, 11, 11000);
 -- call update_invoice_details('B000016', 'IT00001', 'IT00001', 200, 12, 2400);
 ---------------------------------------------------------------------
 
